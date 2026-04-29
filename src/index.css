@@ -38,14 +38,13 @@
   }
 
   @layer base {
-    * { @apply border-border box-sizing-border; }
-    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
     body {
       @apply bg-background text-foreground antialiased;
       font-family: 'Outfit', system-ui, sans-serif;
       background-color: hsl(222 28% 9%);
-      background-image: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(192 100% 52% / 0.07), transparent);
-      background-attachment: fixed;
+      overflow-x: hidden;
     }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -56,38 +55,34 @@
 
   @layer utilities {
     .text-gradient {
-      @apply bg-clip-text text-transparent;
-      background-image: linear-gradient(135deg, hsl(192 100% 62%) 0%, hsl(210 100% 68%) 45%, hsl(270 100% 72%) 100%);
+      background: linear-gradient(135deg, hsl(192 100% 62%) 0%, hsl(210 100% 68%) 45%, hsl(270 80% 72%) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .shadow-glow { box-shadow: 0 0 24px -4px hsl(192 100% 52% / 0.45), 0 4px 16px -4px hsl(192 100% 52% / 0.2); }
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .shadow-glow { box-shadow: 0 0 24px -4px hsl(192 100% 52% / 0.5), 0 4px 16px -4px hsl(192 100% 52% / 0.25); }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-    .box-sizing-border { box-sizing: border-box; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+  }
+
+  @keyframes preloaderBounce {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(-20px); opacity: 0.7; }
   }
 
   @keyframes animeCardEnter {
-    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    from { opacity: 0; transform: translateY(18px) scale(0.95); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
 
-  @keyframes slideInFromLeft {
-    from { transform: translateX(-100%); opacity: 0; }
-    to   { transform: translateX(0); opacity: 1; }
-  }
-
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(24px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
-  }
-
-  @keyframes pageEnter {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes shimmer {
@@ -97,28 +92,78 @@
 
   @keyframes pulseGlow {
     0%, 100% { box-shadow: 0 0 8px hsl(192 100% 52% / 0.3); }
-    50%       { box-shadow: 0 0 24px hsl(192 100% 52% / 0.7), 0 0 48px hsl(192 100% 52% / 0.3); }
+    50%       { box-shadow: 0 0 28px hsl(192 100% 52% / 0.8), 0 0 56px hsl(192 100% 52% / 0.3); }
   }
 
-  @keyframes bounceDot {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-12px); }
+  @keyframes slideLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes pageBloom {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: hsl(222 28% 9%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    transition: opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: all;
+  }
+
+  .preloader-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .preloader-dots {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .preloader-dot {
+    display: block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    animation: preloaderBounce 0.65s ease-in-out infinite;
+  }
+
+  .preloader-logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .preloader-logo span {
+    color: hsl(192 100% 52%);
   }
 
   .anime-card-enter {
     animation: animeCardEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .fade-in      { animation: fadeIn 0.5s ease forwards; }
-  .fade-in-up   { animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-  .page-enter   { animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-  .badge-glow   { animation: pulseGlow 3s ease-in-out infinite; }
+  .fade-in    { animation: fadeIn 0.5s ease both; }
+  .fade-in-up { animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .slide-left { animation: slideLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .badge-glow { animation: pulseGlow 3s ease-in-out infinite; }
 
   .scroll-fade {
     opacity: 0;
-    transform: translateY(22px);
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(24px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform;
   }
   .scroll-fade.in-view {
@@ -130,9 +175,18 @@
     background: linear-gradient(
       90deg,
       hsl(222 22% 17%) 0%,
-      hsl(222 22% 22%) 50%,
+      hsl(222 22% 23%) 50%,
       hsl(222 22% 17%) 100%
     );
     background-size: 200% 100%;
     animation: shimmer 1.8s ease-in-out infinite;
   }
+
+  .glass-nav {
+    background: rgba(17 20 30 / 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid hsl(222 22% 20% / 0.6);
+    box-shadow: 0 2px 32px rgba(0 0 0 / 0.4);
+  }
+  
