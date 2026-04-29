@@ -1,56 +1,81 @@
-# Shinime Anime Streaming Website
+# Shinime
 
-Shinime is a modern anime streaming website built with a dark-themed UI, focused on performance, usability, and a comfortable watching experience on both mobile and desktop.
+  A modern anime streaming web application built with React, Vite, and TypeScript.
 
-This project consumes anime data from a custom scraper (Mobinime) and provides features such as browsing, searching, detailed anime information, and streaming episodes.
+  ## Features
 
---------------------------------------------------
-PROJECT DESCRIPTION
---------------------------------------------------
-Shinime is designed as a lightweight and responsive web application for anime fans.  
-It emphasizes clean UI, smooth navigation, and an immersive streaming experience similar to modern anime platforms.
+  - Homepage with recommended, ongoing, and scheduled anime
+  - Anime search
+  - Browse by type: Series, Movies, OVA, Live Action
+  - Genre browsing and filtering
+  - Anime detail pages with synopsis, ratings, and episode lists
+  - Episode streaming with HD/SD quality selection
+  - Cinema mode and keyboard navigation
+  - Responsive design for mobile and desktop
 
---------------------------------------------------
-TECH STACK
---------------------------------------------------
-- React
-- Vite.js
-- React Router
-- Axios
-- HTML5 Video / iframe streaming
-- CSS / Utility-first styling
-- Dark Mode UI
+  ## Tech Stack
 
---------------------------------------------------
-FEATURES
---------------------------------------------------
-- Homepage with:
-  - Recommended anime
-  - Ongoing anime
-  - Weekly anime schedule
-- Anime search
-- Anime list by type:
-  - Series
-  - Movie
-  - OVA
-  - Live Action
-- Genre listing and filtering
-- Anime detail page:
-  - Poster
-  - Synopsis
-  - Rating
-  - Genres
-  - Episode list
-- Stream page:
-  - Embedded video player
-  - Episode navigation (Prev / Next)
-  - Mobile and desktop optimized layout
-- Responsive design
-- Error handling and loading states
+  - React 18
+  - Vite + TypeScript
+  - React Router v6
+  - TanStack Query
+  - Tailwind CSS + shadcn/ui
+  - hls.js (HLS video streaming)
+  - Supabase (Edge Functions as API proxy)
+  - Express (production static file server)
 
---------------------------------------------------
-NOTES
---------------------------------------------------
-- This project uses a backend proxy to fetch data securely.
-- API keys and scraper logic are not exposed on the frontend.
-- This project is intended for educational and personal use.
+  ## Architecture
+
+  The frontend communicates with a Supabase Edge Function (`mobinime-proxy`) which proxies requests to the anime data API. This keeps API credentials server-side and handles CORS.
+
+  ## Deployment
+
+  ### Prerequisites
+
+  - [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
+  - [Supabase CLI](https://supabase.com/docs/guides/cli)
+  - A Supabase project
+
+  ### 1. Deploy the Supabase Edge Function
+
+  ```bash
+  supabase login
+  supabase link --project-ref YOUR_PROJECT_REF
+  supabase functions deploy mobinime-proxy --no-verify-jwt
+  ```
+
+  ### 2. Deploy to Heroku
+
+  Create a new Heroku app and connect it to this GitHub repository.
+
+  Set the following Config Vars in your Heroku app dashboard under **Settings → Config Vars**:
+
+  | Config Var | Value |
+  |---|---|
+  | `VITE_SUPABASE_URL` | `https://your-project-ref.supabase.co` |
+  | `VITE_SUPABASE_PUBLISHABLE_KEY` | Your Supabase **anon/public** key |
+  | `NPM_CONFIG_PRODUCTION` | `false` |
+
+  > **Important:** `NPM_CONFIG_PRODUCTION=false` is required so Heroku installs dev dependencies needed to build the frontend.
+
+  Then deploy via the Heroku dashboard or:
+
+  ```bash
+  heroku login
+  heroku git:remote -a your-heroku-app-name
+  git push heroku main
+  ```
+
+  ## Local Development
+
+  ```bash
+  cp .env.example .env
+  # Fill in your Supabase credentials in .env
+  npm install
+  npm run dev
+  ```
+
+  ## License
+
+  For educational and personal use only.
+  
