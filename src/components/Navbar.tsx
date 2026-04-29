@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
   import { Link, useNavigate, useLocation } from 'react-router-dom';
-  import { Search, Menu, X, Zap, Tv, Film, Clapperboard, Tag, Clock, Home } from 'lucide-react';
+  import { Search, Menu, X, Zap, Tv, Film, Clapperboard, Tag, Clock, Home, MessageCircle, ChevronRight } from 'lucide-react';
   import { cn } from '@/lib/utils';
+
+  const WA_CHANNEL_URL = 'https://whatsapp.com/channel/0029VbCKkVc7z4kh02WGqF0m';
 
   const navLinks = [
     { name: 'Home', href: '/', icon: Home },
@@ -57,29 +59,29 @@ import { useState, useEffect, useRef } from 'react';
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
           scrolled
             ? 'bg-background/95 backdrop-blur-xl border-b border-border/60 shadow-lg'
-            : 'bg-gradient-to-b from-background/80 to-transparent backdrop-blur-sm'
+            : 'bg-gradient-to-b from-background/90 to-transparent backdrop-blur-md'
         )}>
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center h-16 gap-3">
               <button
                 onClick={() => setDrawerOpen(true)}
-                aria-label="Open menu"
+                aria-label="Open navigation menu"
                 className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-200 shrink-0"
               >
                 <Menu className="w-5 h-5" />
               </button>
 
-              <Link to="/" className="flex items-center gap-2 group shrink-0 mr-2">
+              <Link to="/" className="flex items-center gap-2 group shrink-0">
                 <div className="relative">
                   <Zap className="w-7 h-7 text-accent fill-accent group-hover:scale-110 transition-transform duration-200" />
-                  <div className="absolute inset-0 bg-accent/40 blur-md group-hover:blur-xl transition-all duration-300 rounded-full" />
+                  <div className="absolute inset-0 bg-accent/30 blur-lg group-hover:blur-xl transition-all duration-300 rounded-full" />
                 </div>
                 <span className="text-xl font-black tracking-tight hidden sm:block">
                   Toxi<span className="text-accent">Nime</span>
                 </span>
               </Link>
 
-              <div className="hidden lg:flex items-center gap-1 flex-1">
+              <div className="hidden lg:flex items-center gap-1 flex-1 ml-2">
                 {navLinks.slice(1, 5).map((link) => (
                   <Link
                     key={link.name}
@@ -98,8 +100,17 @@ import { useState, useEffect, useRef } from 'react';
               </div>
 
               <div className="flex-1 lg:flex-none flex justify-end items-center gap-2">
+                <a
+                  href={WA_CHANNEL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 hover:border-green-500/40 text-xs font-semibold transition-all duration-200 shrink-0"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 fill-green-400" />
+                  <span className="hidden md:inline">Join Channel</span>
+                </a>
                 {searchOpen ? (
-                  <form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 lg:w-72">
+                  <form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 lg:w-64">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <input
@@ -134,7 +145,7 @@ import { useState, useEffect, useRef } from 'react';
         </nav>
 
         {drawerOpen && (
-          <div className="fixed inset-0 z-50 flex" onClick={() => setDrawerOpen(false)}>
+          <div className="fixed inset-0 z-[100] flex" onClick={() => setDrawerOpen(false)}>
             <div
               className="w-72 max-w-[85vw] h-full bg-card border-r border-border/60 flex flex-col shadow-2xl"
               style={{ animation: 'slideInFromLeft 0.25s cubic-bezier(0.16,1,0.3,1) forwards' }}
@@ -179,19 +190,30 @@ import { useState, useEffect, useRef } from 'react';
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                     )}
                   >
-                    <link.icon className="w-4 h-4" />
+                    <link.icon className="w-4 h-4 shrink-0" />
                     {link.name}
                   </Link>
                 ))}
+                <div className="pt-2 border-t border-border/40 mt-2">
+                  <a
+                    href={WA_CHANNEL_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-all duration-200"
+                  >
+                    <MessageCircle className="w-4 h-4 fill-green-400 shrink-0" />
+                    Join WhatsApp Channel
+                    <ChevronRight className="w-3 h-3 ml-auto" />
+                  </a>
+                </div>
               </nav>
 
               <div className="p-4 border-t border-border/40">
-                <p className="text-xs text-muted-foreground text-center">
-                  ToxiNime &copy; {new Date().getFullYear()}
-                </p>
+                <p className="text-xs text-muted-foreground text-center">ToxiNime &copy; {new Date().getFullYear()} &middot; Free Anime Streaming</p>
               </div>
             </div>
-            <div className="flex-1 bg-background/50 backdrop-blur-sm" />
+            <div className="flex-1 bg-background/60 backdrop-blur-sm" />
           </div>
         )}
       </>
