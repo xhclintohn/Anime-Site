@@ -81,14 +81,12 @@ import { useEffect, useState, useCallback } from 'react';
                   >
                     <Sparkles className="w-4 h-4" /> Browse Anime
                   </Link>
-                  <a
-                    href={WA_CHANNEL_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-green-500/10 border border-green-500/25 text-green-400 font-bold text-sm hover:bg-green-500/20 transition-all duration-200"
+                  <Link
+                    to="/history"
+                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-muted/60 border border-border/40 text-foreground/80 font-bold text-sm hover:bg-muted hover:text-foreground transition-all duration-200"
                   >
-                    <MessageCircle className="w-4 h-4 fill-green-400" /> Join Channel
-                  </a>
+                    <Clock className="w-4 h-4" /> My History
+                  </Link>
                 </div>
               </div>
             </div>
@@ -214,7 +212,7 @@ import { useEffect, useState, useCallback } from 'react';
                             : 'bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border-border/40'
                         )}
                       >
-                        {DAY_MAP[dayIdx]}{isToday ? ' • Today' : ''}
+                        {DAY_MAP[dayIdx]}{isToday ? ' · Today' : ''}
                       </button>
                     );
                   })}
@@ -251,12 +249,12 @@ import { useEffect, useState, useCallback } from 'react';
                   <Link key={h} to={h} className="text-xs text-muted-foreground hover:text-accent transition-colors">{l}</Link>
                 ))}
                 <a href={WA_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="text-xs text-green-400 hover:text-green-300 transition-colors flex items-center gap-1">
-                  <MessageCircle className="w-3 h-3" />WhatsApp
+                  <MessageCircle className="w-3 h-3" /> WhatsApp
                 </a>
               </div>
             </div>
-            <div className="border-t border-border/30 mt-6 pt-6 text-center">
-              <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} ToxiNime. All rights reserved.</p>
+            <div className="border-t border-border/30 mt-8 pt-6 text-center">
+              <p className="text-xs text-muted-foreground/50">© 2025 ToxiNime. Content belongs to their respective owners.</p>
             </div>
           </div>
         </footer>
