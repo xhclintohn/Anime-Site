@@ -6,12 +6,12 @@ import { useState, useEffect, useRef } from 'react';
   const WA_CHANNEL_URL = 'https://whatsapp.com/channel/0029VbCKkVc7z4kh02WGqF0m';
 
   const navLinks = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Series', href: '/anime/list/series', icon: Tv },
-    { name: 'Movies', href: '/anime/list/movie', icon: Film },
-    { name: 'OVA', href: '/anime/list/ova', icon: Clapperboard },
-    { name: 'Genres', href: '/genres', icon: Tag },
-    { name: 'History', href: '/history', icon: Clock },
+    { name: 'Home',    href: '/',                  icon: Home },
+    { name: 'Series',  href: '/anime/list/series', icon: Tv },
+    { name: 'Movies',  href: '/anime/list/movie',  icon: Film },
+    { name: 'OVA',     href: '/anime/list/ova',    icon: Clapperboard },
+    { name: 'Genres',  href: '/genres',            icon: Tag },
+    { name: 'History', href: '/history',           icon: Clock },
   ];
 
   export function Navbar() {
@@ -22,21 +22,17 @@ import { useState, useEffect, useRef } from 'react';
     const navigate = useNavigate();
     const location = useLocation();
     const searchRef = useRef<HTMLInputElement>(null);
+    const mobileSearchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-      const handler = () => setScrolled(window.scrollY > 20);
-      window.addEventListener('scroll', handler, { passive: true });
-      return () => window.removeEventListener('scroll', handler);
+      const fn = () => setScrolled(window.scrollY > 20);
+      window.addEventListener('scroll', fn, { passive: true });
+      return () => window.removeEventListener('scroll', fn);
     }, []);
 
-    useEffect(() => {
-      setDrawerOpen(false);
-      setSearchOpen(false);
-    }, [location.pathname]);
+    useEffect(() => { setDrawerOpen(false); setSearchOpen(false); }, [location.pathname]);
 
-    useEffect(() => {
-      if (searchOpen && searchRef.current) searchRef.current.focus();
-    }, [searchOpen]);
+    useEffect(() => { if (searchOpen && searchRef.current) searchRef.current.focus(); }, [searchOpen]);
 
     useEffect(() => {
       document.body.style.overflow = drawerOpen ? 'hidden' : '';
@@ -45,177 +41,149 @@ import { useState, useEffect, useRef } from 'react';
 
     const handleSearch = (e: React.FormEvent) => {
       e.preventDefault();
-      if (searchQuery.trim()) {
-        navigate('/search?q=' + encodeURIComponent(searchQuery.trim()));
-        setSearchQuery('');
-        setSearchOpen(false);
-        setDrawerOpen(false);
-      }
+      const q = searchQuery.trim();
+      if (q) { navigate('/search?q=' + encodeURIComponent(q)); setSearchQuery(''); setSearchOpen(false); setDrawerOpen(false); }
     };
+
+    const isActive = (href: string) => href === '/' ? location.pathname === '/' : location.pathname.startsWith(href);
 
     return (
       <>
-        <nav className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-          scrolled
-            ? 'glass-nav'
-            : 'bg-transparent backdrop-blur-sm'
-        )}>
+        <nav className={cn('fixed top-0 left-0 right-0 z-50 transition-all duration-300', scrolled ? 'glass-nav' : 'bg-transparent')}>
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center h-16 gap-3">
-              <button
-                onClick={() => setDrawerOpen(true)}
-                aria-label="Open navigation menu"
-                className="flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-200 shrink-0"
-              >
+
+              {/* Mobile hamburger */}
+              <button onClick={() => setDrawerOpen(true)} aria-label="Menu"
+                className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/8 transition-colors shrink-0 lg:hidden"
+                style={{ color: 'rgba(255,255,255,0.65)' }}>
                 <Menu className="w-5 h-5" />
               </button>
 
+              {/* Logo */}
               <Link to="/" className="flex items-center gap-2 group shrink-0">
-                <div className="relative">
-                  <Zap className="w-7 h-7 text-accent fill-accent group-hover:scale-110 transition-transform duration-200" />
-                  <div className="absolute inset-0 bg-accent/30 blur-lg group-hover:blur-xl transition-all duration-300 rounded-full" />
+                <div className="relative w-8 h-8 flex items-center justify-center rounded-xl shadow-glow-sm" style={{ background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.25)' }}>
+                  <Zap className="w-4 h-4 fill-current" style={{ color: '#a78bfa' }} />
                 </div>
-                <span className="text-xl font-black tracking-tight hidden sm:block">
-                  Toxi<span className="text-accent">Nime</span>
+                <span className="text-base font-black tracking-tight hidden xs:inline" style={{ color: '#e2e8f0' }}>
+                  Toxi<span style={{ color: '#a78bfa' }}>Nime</span>
                 </span>
               </Link>
 
-              <div className="hidden lg:flex items-center gap-1 flex-1 ml-2">
-                {navLinks.slice(1, 5).map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.href}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                      location.pathname === link.href
-                        ? 'bg-accent/15 text-accent'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    )}
+              {/* Desktop nav links */}
+              <nav className="hidden lg:flex items-center gap-1 ml-3">
+                {navLinks.map(({ name, href }) => (
+                  <Link key={href} to={href}
+                    className={cn('px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200', isActive(href) ? 'text-white' : 'hover:text-white')}
+                    style={isActive(href) ? { background: 'rgba(167,139,250,0.14)', color: '#a78bfa' } : { color: 'rgba(255,255,255,0.55)' }}
                   >
-                    <link.icon className="w-3.5 h-3.5" />
-                    {link.name}
+                    {name}
                   </Link>
                 ))}
-              </div>
+              </nav>
 
-              <div className="flex-1 lg:flex-none flex justify-end items-center gap-2">
-                <a
-                  href={WA_CHANNEL_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 hover:border-green-500/40 text-xs font-semibold transition-all duration-200 shrink-0"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 fill-green-400" />
-                  <span className="hidden md:inline">Join Channel</span>
-                </a>
-                {searchOpen ? (
-                  <form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 lg:w-64">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <input
-                        ref={searchRef}
-                        type="text"
-                        placeholder="Search anime..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-muted/70 border border-border/60 rounded-xl text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all duration-200"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSearchOpen(false)}
-                      className="w-9 h-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </form>
-                ) : (
-                  <button
-                    onClick={() => setSearchOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50 border border-border/40 text-muted-foreground hover:text-foreground hover:bg-muted/80 hover:border-border transition-all duration-200 text-sm"
-                  >
-                    <Search className="w-4 h-4" />
-                    <span className="hidden md:inline">Search anime...</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </nav>
-
-        {drawerOpen && (
-          <div className="fixed inset-0 z-[100] flex" onClick={() => setDrawerOpen(false)}>
-            <div
-              className="w-72 max-w-[85vw] h-full bg-card border-r border-border/60 flex flex-col shadow-2xl"
-              style={{ animation: 'slideInFromLeft 0.25s cubic-bezier(0.16,1,0.3,1) forwards' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between p-4 border-b border-border/40">
-                <Link to="/" className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
-                  <Zap className="w-6 h-6 text-accent fill-accent" />
-                  <span className="text-lg font-black">Toxi<span className="text-accent">Nime</span></span>
-                </Link>
-                <button
-                  onClick={() => setDrawerOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSearch} className="p-4 border-b border-border/40">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              {/* Desktop search */}
+              <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-sm ml-auto items-center gap-2 relative">
+                <div className="relative w-full">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'rgba(255,255,255,0.35)' }} />
                   <input
+                    ref={searchRef}
                     type="text"
                     placeholder="Search anime..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-muted/70 border border-border/60 rounded-xl text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 rounded-xl text-sm outline-none transition-all"
+                    style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}
+                    onFocus={e => { e.target.style.border = '1px solid rgba(167,139,250,0.4)'; e.target.style.background = 'rgba(255,255,255,0.09)'; }}
+                    onBlur={e => { e.target.style.border = '1px solid rgba(255,255,255,0.1)'; e.target.style.background = 'rgba(255,255,255,0.07)'; }}
                   />
                 </div>
               </form>
 
-              <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.href}
-                    onClick={() => setDrawerOpen(false)}
-                    className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
-                      location.pathname === link.href
-                        ? 'bg-accent/15 text-accent border border-accent/20'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                    )}
-                  >
-                    <link.icon className="w-4 h-4 shrink-0" />
-                    {link.name}
-                  </Link>
-                ))}
-                <div className="pt-2 border-t border-border/40 mt-2">
-                  <a
-                    href={WA_CHANNEL_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setDrawerOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-all duration-200"
-                  >
-                    <MessageCircle className="w-4 h-4 fill-green-400 shrink-0" />
-                    Join WhatsApp Channel
-                    <ChevronRight className="w-3 h-3 ml-auto" />
-                  </a>
-                </div>
-              </nav>
+              {/* Mobile search icon */}
+              <button onClick={() => setSearchOpen(s => !s)} aria-label="Search"
+                className="flex items-center justify-center w-10 h-10 rounded-xl md:hidden hover:bg-white/8 transition-colors ml-auto"
+                style={{ color: 'rgba(255,255,255,0.65)' }}>
+                {searchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+              </button>
 
-              <div className="p-4 border-t border-border/40">
-                <p className="text-xs text-muted-foreground text-center">ToxiNime &copy; {new Date().getFullYear()} &middot; Free Anime Streaming</p>
-              </div>
+              {/* WhatsApp (desktop) */}
+              <a href={WA_CHANNEL_URL} target="_blank" rel="noopener noreferrer"
+                className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all hover:opacity-90 shrink-0"
+                style={{ background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.2)', color: '#25d366' }}>
+                <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+              </a>
             </div>
-            <div className="flex-1 bg-background/60 backdrop-blur-sm" />
+
+            {/* Mobile search bar */}
+            {searchOpen && (
+              <form onSubmit={handleSearch} className="pb-3 md:hidden slide-down">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                  <input
+                    ref={mobileSearchRef}
+                    autoFocus
+                    type="text"
+                    placeholder="Search anime..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
+                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(167,139,250,0.3)', color: '#e2e8f0' }}
+                  />
+                </div>
+              </form>
+            )}
           </div>
+        </nav>
+
+        {/* Drawer backdrop */}
+        {drawerOpen && (
+          <div className="fixed inset-0 z-[60] lg:hidden" onClick={() => setDrawerOpen(false)}
+            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} />
         )}
+
+        {/* Drawer */}
+        <aside className={cn('fixed top-0 left-0 h-full z-[70] flex flex-col lg:hidden transition-transform duration-300 ease-out', drawerOpen ? 'translate-x-0' : '-translate-x-full')}
+          style={{ width: 280, background: '#0e0f1a', borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+
+          {/* Drawer header */}
+          <div className="flex items-center justify-between p-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <Link to="/" className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
+              <div className="w-8 h-8 flex items-center justify-center rounded-xl shadow-glow-sm" style={{ background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.25)' }}>
+                <Zap className="w-4 h-4 fill-current" style={{ color: '#a78bfa' }} />
+              </div>
+              <span className="text-base font-black" style={{ color: '#e2e8f0' }}>Toxi<span style={{ color: '#a78bfa' }}>Nime</span></span>
+            </Link>
+            <button onClick={() => setDrawerOpen(false)} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/8 transition-colors" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Drawer nav links */}
+          <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
+            {navLinks.map(({ name, href, icon: Icon }) => (
+              <Link key={href} to={href} onClick={() => setDrawerOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group"
+                style={isActive(href)
+                  ? { background: 'rgba(167,139,250,0.14)', color: '#a78bfa' }
+                  : { color: 'rgba(255,255,255,0.6)' }}>
+                <Icon className="w-5 h-5 shrink-0" />
+                <span className="font-semibold text-sm">{name}</span>
+                {isActive(href) && <ChevronRight className="w-4 h-4 ml-auto" />}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Drawer footer — WhatsApp */}
+          <div className="p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <a href={WA_CHANNEL_URL} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-sm transition-all"
+              style={{ background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.18)', color: '#25d366' }}>
+              <MessageCircle className="w-5 h-5" /> Join WhatsApp Channel
+            </a>
+          </div>
+        </aside>
       </>
     );
   }
+  
