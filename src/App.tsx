@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
   import { BrowserRouter, Routes, Route } from "react-router-dom";
   import { HelmetProvider } from "react-helmet-async";
   import { useEffect, useState } from "react";
-  import { Zap } from "lucide-react";
   import HomePage from "./pages/HomePage";
   import SearchPage from "./pages/SearchPage";
   import AnimeListPage from "./pages/AnimeListPage";
@@ -20,27 +19,21 @@ import { Toaster } from "@/components/ui/toaster";
   function Preloader() {
     const [hidden, setHidden] = useState(false);
     const [mounted, setMounted] = useState(true);
-
     useEffect(() => {
-      const t1 = setTimeout(() => setHidden(true), 1400);
-      const t2 = setTimeout(() => setMounted(false), 3200);
+      const t1 = setTimeout(() => setHidden(true), 1200);
+      const t2 = setTimeout(() => setMounted(false), 2800);
       return () => { clearTimeout(t1); clearTimeout(t2); };
     }, []);
-
     if (!mounted) return null;
-
+    const colors = ['#a78bfa','#818cf8','#c084fc','#a78bfa','#818cf8'];
     return (
       <div className={`preloader ${hidden ? 'preloader-hidden' : ''}`}>
         <div className="preloader-dots">
-          <span className="preloader-dot" style={{ background: 'hsl(192 100% 52%)', animationDelay: '0s' }} />
-          <span className="preloader-dot" style={{ background: 'hsl(210 100% 68%)', animationDelay: '.1s' }} />
-          <span className="preloader-dot" style={{ background: 'hsl(270 80% 72%)', animationDelay: '.2s' }} />
-          <span className="preloader-dot" style={{ background: 'hsl(192 100% 52%)', animationDelay: '.3s' }} />
-          <span className="preloader-dot" style={{ background: 'hsl(210 100% 68%)', animationDelay: '.4s' }} />
+          {colors.map((c, i) => (
+            <span key={i} className="preloader-dot" style={{ background: c, animationDelay: (i * 0.1) + 's' }} />
+          ))}
         </div>
-        <div className="preloader-logo">
-          Toxi<span>Nime</span>
-        </div>
+        <div className="preloader-logo">Toxi<span>Nime</span></div>
       </div>
     );
   }
@@ -48,16 +41,10 @@ import { Toaster } from "@/components/ui/toaster";
   function ScrollFadeObserver() {
     useEffect(() => {
       const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) entry.target.classList.add('in-view');
-          });
-        },
+        (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); }),
         { threshold: 0.06, rootMargin: '0px 0px -30px 0px' }
       );
-      const observe = () => {
-        document.querySelectorAll('.scroll-fade:not(.in-view)').forEach((el) => io.observe(el));
-      };
+      const observe = () => document.querySelectorAll('.scroll-fade:not(.in-view)').forEach(el => io.observe(el));
       observe();
       const mo = new MutationObserver(observe);
       mo.observe(document.body, { childList: true, subtree: true });
