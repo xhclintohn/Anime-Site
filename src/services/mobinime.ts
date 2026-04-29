@@ -128,12 +128,12 @@ export interface AnimeItem {
     async homepage(): Promise<HomepageData> {
       try {
         const data = await proxyRequest('/pages/homepage', 'GET');
-        const recommend = Array.isArray(data.recommend) ? data.recommend.map(normalize) : [];
-        const ongoing = Array.isArray(data.ongoing) ? data.ongoing.map(normalize) : [];
+        const recommend = Array.isArray(data.recommend) ? (data.recommend as Record<string, unknown>[]).map(normalize) : [];
+        const ongoing = Array.isArray(data.ongoing) ? (data.ongoing as Record<string, unknown>[]).map(normalize) : [];
         const scheduleRaw = data.schedule && typeof data.schedule === 'object' ? data.schedule as Record<string, unknown[]> : {};
         const schedule: ScheduleData = {};
         for (const [k, v] of Object.entries(scheduleRaw)) {
-          schedule[k] = Array.isArray(v) ? v.map(normalize) : [];
+          schedule[k] = Array.isArray(v) ? (v as Record<string, unknown>[]).map(normalize) : [];
         }
         if (recommend.length > 0 || ongoing.length > 0) {
           return { recommend, ongoing, schedule };
@@ -163,14 +163,14 @@ export interface AnimeItem {
         let gnr = '';
         if (genre) {
           const genres = await this.genreList();
-          const found = genres.find(g => g.title.toLowerCase().replace(/\s+/g, '-') === genre.toLowerCase());
+          const found = genres.find(g => g.title.toLowerCase().replace(/s+/g, '-') === genre.toLowerCase());
           gnr = found?.id || '';
         }
         const data = await proxyRequest('/anime/list', 'POST', {
           perpage: count, startpage: page, userid: '', sort: '', genre: gnr, jenisanime: ANIME_TYPES[type],
         });
         const list = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
-        if (list.length > 0) return list.map(normalize);
+        if (list.length > 0) return (list as Record<string, unknown>[]).map(normalize);
         throw new Error('Empty list');
       } catch {
         return this.animeListJikan(type, Number(page));
@@ -188,7 +188,7 @@ export interface AnimeItem {
     async genreList(): Promise<Genre[]> {
       try {
         const data = await proxyRequest('/anime/genre-list', 'GET');
-        return Array.isArray(data) ? data : [];
+        return Array.isArray(data) ? data as Genre[] : [];
       } catch {
         const data = await jikanRequest('/genres/anime');
         if (Array.isArray(data.data)) {
@@ -204,7 +204,7 @@ export interface AnimeItem {
       try {
         const data = await proxyRequest('/anime/search', 'POST', { perpage: count, startpage: page, q: query });
         const list = Array.isArray(data) ? data : [];
-        if (list.length > 0) return list.map(normalize);
+        if (list.length > 0) return (list as Record<string, unknown>[]).map(normalize);
         throw new Error('Empty');
       } catch {
         const data = await jikanRequest('/anime?q=' + encodeURIComponent(query) + '&limit=' + count + '&page=' + (Number(page) + 1));
@@ -217,14 +217,9 @@ export interface AnimeItem {
         const malId = id.replace('mal-', '');
         return this.detailJikan(malId);
       }
-      try {
-        const data = await proxyRequest('/anime/detail', 'POST', { id });
-        if (!data?.id && !data?.title) throw new Error('Empty detail');
-        return normalize(data);
-      } catch {
-        const data = await proxyRequest('/anime/detail', 'POST', { id });
-        return normalize(data);
-      }
+      const data = await proxyRequest('/anime/detail', 'POST', { id });
+      if (!data?.id && !data?.title) throw new Error('Anime detail not found.');
+      return normalize(data as Record<string, unknown>);
     }
 
     private async detailJikan(malId: string): Promise<AnimeItem> {
