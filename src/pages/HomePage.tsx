@@ -57,13 +57,13 @@ import { useEffect, useState, useCallback } from 'react';
         <Navbar />
         <main className="min-h-screen pb-20">
           <section className="relative overflow-hidden pt-16">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(195_100%_55%/0.12),transparent_60%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(124,58,237,0.12),transparent_60%)]" />
             <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-accent/5 blur-3xl pointer-events-none" />
             <div className="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full bg-accent/3 blur-3xl pointer-events-none" />
             <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-10">
               <div className="max-w-2xl fade-in">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/25 text-accent text-xs font-bold mb-6 badge-glow uppercase tracking-wider">
-                  <Zap className="w-3 h-3 fill-accent" />
+                  <Zap className="w-3 h-3" style={{ fill: '#a78bfa', color: '#a78bfa' }} />
                   Free HD Streaming — No Ads
                 </div>
                 <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-5 leading-[1.05]">
