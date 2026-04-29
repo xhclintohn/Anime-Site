@@ -50,20 +50,34 @@ export interface AnimeItem {
   export type AnimeType = 'series' | 'movie' | 'ova' | 'live-action';
 
   const ANIME_TYPES: Record<AnimeType, string> = {
-    series: '1',
-    movie: '3',
-    ova: '2',
-    'live-action': '4',
+    series: '1', movie: '3', ova: '2', 'live-action': '4',
   };
 
   const STATUS_MAP: Record<string, string> = {
-    '1': 'Ongoing',
-    '2': 'Completed',
-    '3': 'Upcoming',
+    '1': 'Ongoing', '2': 'Completed', '3': 'Upcoming',
   };
+
+  function decodeHtmlEntities(str: string): string {
+    return str
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+  }
+
+  function normalizeEpisode(item: Record<string, unknown>, idx: number): Episode {
+    return {
+      id: String(item.id || ''),
+      number: item.number ? Number(item.number) : (item.episode ? Number(item.episode) : idx + 1),
+      title: item.title ? String(item.title) : undefined,
+      thumbnail: item.thumbnail as string | undefined,
+    };
+  }
 
   function normalize(item: Record<string, unknown>): AnimeItem {
     const status = String(item.status || '');
+    const rawEpisodes = Array.isArray(item.episodes) ? item.episodes as Record<string, unknown>[] : undefined;
     return {
       id: String(item.id || ''),
       title: String(item.title || 'Unknown'),
@@ -81,8 +95,8 @@ export interface AnimeItem {
       categories: item.categories as AnimeItem['categories'],
       description: item.description as string | undefined,
       content: item.content as string | undefined,
-      episodes: item.episodes as Episode[] | undefined,
-      totalEpisode: item.totalEpisode ? Number(item.totalEpisode) : undefined,
+      episodes: rawEpisodes ? rawEpisodes.map(normalizeEpisode) : undefined,
+      totalEpisode: item.totalEpisode ? Number(item.totalEpisode) : (item.total_episode ? Number(item.total_episode) : undefined),
       totalEpisodes: item.totalEpisodes ? Number(item.totalEpisodes) : undefined,
       episode: item.episode ? Number(item.episode) : undefined,
     };
@@ -135,9 +149,7 @@ export interface AnimeItem {
         for (const [k, v] of Object.entries(scheduleRaw)) {
           schedule[k] = Array.isArray(v) ? (v as Record<string, unknown>[]).map(normalize) : [];
         }
-        if (recommend.length > 0 || ongoing.length > 0) {
-          return { recommend, ongoing, schedule };
-        }
+        if (recommend.length > 0 || ongoing.length > 0) return { recommend, ongoing, schedule };
         throw new Error('Empty primary data');
       } catch {
         return this.homepageJikan();
@@ -180,8 +192,7 @@ export interface AnimeItem {
     private async animeListJikan(type: AnimeType, page: number): Promise<AnimeItem[]> {
       const typeMap: Record<AnimeType, string> = { series: 'tv', movie: 'movie', ova: 'ova', 'live-action': 'tv' };
       const jType = typeMap[type] || 'tv';
-      const p = page + 1;
-      const data = await jikanRequest('/top/anime?type=' + jType + '&page=' + p + '&limit=15');
+      const data = await jikanRequest('/top/anime?type=' + jType + '&page=' + (page + 1) + '&limit=15');
       return Array.isArray(data.data) ? (data.data as Record<string, unknown>[]).map(jikanToAnime) : [];
     }
 
@@ -214,8 +225,7 @@ export interface AnimeItem {
 
     async detail(id: string): Promise<AnimeItem> {
       if (id.startsWith('mal-')) {
-        const malId = id.replace('mal-', '');
-        return this.detailJikan(malId);
+        return this.detailJikan(id.replace('mal-', ''));
       }
       const data = await proxyRequest('/anime/detail', 'POST', { id });
       if (!data?.id && !data?.title) throw new Error('Anime detail not found.');
@@ -228,9 +238,7 @@ export interface AnimeItem {
       const epData = await jikanRequest('/anime/' + malId + '/episodes?per_page=100');
       const episodes: Episode[] = Array.isArray(epData.data)
         ? (epData.data as Array<{mal_id: number; title?: string}>).map((e, i) => ({
-            id: 'ep-' + e.mal_id,
-            number: i + 1,
-            title: e.title,
+            id: 'ep-' + e.mal_id, number: i + 1, title: e.title,
           }))
         : [];
       const item = jikanToAnime(full);
@@ -241,17 +249,18 @@ export interface AnimeItem {
 
     async stream(id: string, epsid: string, options: { quality?: string } = {}): Promise<string> {
       const { quality = 'HD' } = options;
-      if (id.startsWith('mal-')) throw new Error('Streaming not available for this anime via primary source.');
-      if (!id || !epsid) throw new Error('Anime id & episode id is required.');
+      if (id.startsWith('mal-')) throw new Error('Streaming not available via primary source for this title.');
+      if (!id || !epsid) throw new Error('Anime ID and episode ID are required.');
       const srv = await proxyRequest('/anime/get-server-list', 'POST', {
         id: epsid, animeId: id, jenisAnime: '1', userId: '',
       });
       if (!srv?.serverurl) throw new Error('No server available for this episode.');
-      const data = await proxyRequest('/anime/get-url-video', 'POST', {
-        url: srv.serverurl, quality, position: '0',
+      const cleanServerUrl = decodeHtmlEntities(String(srv.serverurl));
+      const streamData = await proxyRequest('/anime/get-url-video', 'POST', {
+        url: cleanServerUrl, quality, position: '0',
       });
-      if (!data?.url) throw new Error('Stream URL not found. Try a different quality or episode.');
-      return data.url;
+      if (!streamData?.url) throw new Error('Stream URL not found. Try a different episode or quality.');
+      return decodeHtmlEntities(String(streamData.url));
     }
   }
 
