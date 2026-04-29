@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
   import { useParams, Link, useNavigate } from 'react-router-dom';
   import { Helmet } from 'react-helmet-async';
-  import { ChevronLeft, ChevronRight, List, Loader2, AlertCircle, ExternalLink, Moon, Sun, X } from 'lucide-react';
+  import { ChevronLeft, ChevronRight, List, AlertCircle, ExternalLink, X } from 'lucide-react';
   import { Navbar } from '@/components/Navbar';
   import { VideoPlayer } from '@/components/VideoPlayer';
   import { EmptyState } from '@/components/EmptyState';
@@ -9,6 +9,34 @@ import { useEffect, useState, useCallback } from 'react';
   import { mobinime, type AnimeItem, type Episode } from '@/services/mobinime';
   import { useWatchHistory } from '@/hooks/useWatchHistory';
   import { cn } from '@/lib/utils';
+
+  function buildIframeSrc(url: string): string {
+    return '/api/embed-proxy?url=' + encodeURIComponent(url);
+  }
+
+  function isEmbedType(url: string): boolean {
+    if (!url) return false;
+    const lower = url.toLowerCase();
+    return lower.includes('/embed') || lower.includes('player') ||
+      (!lower.endsWith('.mp4') && !lower.endsWith('.m3u8') && !lower.endsWith('.webm') && !lower.endsWith('.ogg'));
+  }
+
+  function StreamLoading() {
+    return (
+      <div className="aspect-video flex flex-col items-center justify-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16 }}>
+        <div className="relative mb-4">
+          <div className="w-16 h-16 rounded-full" style={{ border: '2px solid rgba(167,139,250,0.15)', borderTop: '2px solid #a78bfa', animation: 'spinLoader 0.9s linear infinite' }} />
+          <div className="w-16 h-16 rounded-full absolute inset-0" style={{ border: '2px solid transparent', borderBottom: '2px solid rgba(167,139,250,0.4)', animation: 'spinLoader 1.4s linear infinite reverse' }} />
+        </div>
+        <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.55)' }}>Loading stream...</p>
+        <div className="flex gap-1.5 mt-3">
+          {[0,1,2].map(i => (
+            <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: '#a78bfa', animation: 'preloaderBounce 0.7s ease-in-out infinite', animationDelay: (i * 0.15) + 's' }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   export default function StreamPage() {
     const { animeId, episodeId } = useParams<{ animeId: string; episodeId: string }>();
@@ -23,7 +51,6 @@ import { useEffect, useState, useCallback } from 'react';
     const [streamError, setStreamError] = useState<string | null>(null);
     const [quality, setQuality] = useState<string>('HD');
     const [showEpisodes, setShowEpisodes] = useState(false);
-    const [cinemaMode, setCinemaMode] = useState(false);
 
     const fetchAnimeDetail = useCallback(async () => {
       if (!animeId) return;
@@ -44,6 +71,7 @@ import { useEffect, useState, useCallback } from 'react';
       try {
         setStreamLoading(true);
         setStreamError(null);
+        setStreamUrl('');
         const url = await mobinime.stream(animeId, episodeId, { quality });
         setStreamUrl(url);
       } catch (err: unknown) {
@@ -72,35 +100,26 @@ import { useEffect, useState, useCallback } from 'react';
     const nextEpisode = episodes[currentEpisodeIndex + 1];
 
     useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && cinemaMode) setCinemaMode(false);
-        if (e.key === 'ArrowLeft' && prevEpisode && !e.ctrlKey && !e.metaKey) {
-          navigate('/watch/' + animeId + '/' + prevEpisode.id);
-        }
-        if (e.key === 'ArrowRight' && nextEpisode && !e.ctrlKey && !e.metaKey) {
-          navigate('/watch/' + animeId + '/' + nextEpisode.id);
-        }
+      const fn = (e: KeyboardEvent) => {
+        if (e.key === 'ArrowLeft' && prevEpisode && !e.ctrlKey) navigate('/watch/' + animeId + '/' + prevEpisode.id);
+        if (e.key === 'ArrowRight' && nextEpisode && !e.ctrlKey) navigate('/watch/' + animeId + '/' + nextEpisode.id);
       };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [cinemaMode, prevEpisode, nextEpisode, navigate, animeId]);
+      window.addEventListener('keydown', fn);
+      return () => window.removeEventListener('keydown', fn);
+    }, [prevEpisode, nextEpisode, navigate, animeId]);
 
-    const isEmbedUrl = streamUrl && (
-      streamUrl.includes('embed') ||
-      streamUrl.includes('player') ||
-      streamUrl.includes('iframe') ||
-      (!streamUrl.endsWith('.mp4') && !streamUrl.endsWith('.m3u8') && !streamUrl.endsWith('.webm'))
-    );
-    const isValidStreamUrl = streamUrl && (streamUrl.startsWith('http://') || streamUrl.startsWith('https://'));
+    const episodeNumber = currentEpisode?.number || currentEpisodeIndex + 1;
+    const pageTitle = anime?.title ? anime.title + ' - Episode ' + episodeNumber + ' - ToxiNime' : 'Watch Anime - ToxiNime';
+    const posterImage = anime?.image_cover || anime?.imageCover || anime?.poster || anime?.thumbnail;
 
     if (loading) {
       return (
         <>
           <Navbar />
-          <main className="min-h-screen pt-20 flex items-center justify-center bg-background">
+          <main className="min-h-screen pt-24 flex items-center justify-center" style={{ background: '#0f1117' }}>
             <div className="flex flex-col items-center gap-4">
-              <Loader2 className="w-10 h-10 text-accent animate-spin" />
-              <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
+              <div className="w-14 h-14 rounded-full" style={{ border: '2px solid rgba(167,139,250,0.15)', borderTop: '2px solid #a78bfa', animation: 'spinLoader 0.9s linear infinite' }} />
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>Loading anime...</p>
             </div>
           </main>
         </>
@@ -111,21 +130,19 @@ import { useEffect, useState, useCallback } from 'react';
       return (
         <>
           <Navbar />
-          <main className="min-h-screen pt-20 bg-background">
-            <div className="container mx-auto px-4 py-12">
+          <main className="min-h-screen pt-20" style={{ background: '#0f1117' }}>
+            <div className="max-w-2xl mx-auto px-4 py-16 text-center">
               <EmptyState type="error" description={error} onRetry={fetchAnimeDetail} />
-              <div className="text-center mt-4">
-                <Button asChild variant="outline"><Link to="/">Back to Home</Link></Button>
-              </div>
+              <Button asChild variant="outline" className="mt-4"><Link to="/">Back to Home</Link></Button>
             </div>
           </main>
         </>
       );
     }
 
-    const episodeNumber = currentEpisode?.number || currentEpisodeIndex + 1;
-    const pageTitle = anime?.title ? anime.title + ' - Episode ' + episodeNumber + ' - ToxiNime' : 'Watch Anime - ToxiNime';
-    const posterImage = anime?.image_cover || anime?.imageCover || anime?.poster || anime?.thumbnail;
+    const isEmbed = isEmbedType(streamUrl);
+    const iframeSrc = isEmbed ? buildIframeSrc(streamUrl) : '';
+    const isValid = streamUrl && (streamUrl.startsWith('http://') || streamUrl.startsWith('https://'));
 
     return (
       <>
@@ -133,92 +150,123 @@ import { useEffect, useState, useCallback } from 'react';
           <title>{pageTitle}</title>
           <meta name="description" content={'Watch ' + (anime?.title || 'anime') + ' Episode ' + episodeNumber + ' free on ToxiNime.'} />
         </Helmet>
-        {cinemaMode && <div className="fixed inset-0 bg-black/90 z-40" onClick={() => setCinemaMode(false)} />}
-        {!cinemaMode && <Navbar />}
-        <main className={cn('min-h-screen transition-all duration-300', cinemaMode ? 'pt-0 bg-black' : 'pt-16 sm:pt-20 pb-12 bg-background')}>
-          <div className={cn('mx-auto px-4 transition-all duration-300', cinemaMode ? 'max-w-[1400px] py-4' : 'max-w-5xl')}>
-            {!cinemaMode && (
-              <Link to={'/anime/' + animeId} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
-                <ChevronLeft className="w-4 h-4" />
-                Back to {anime?.title}
-              </Link>
-            )}
-            <div className={cn('relative z-50 transition-all duration-300', cinemaMode ? 'mb-4' : 'mb-6')}>
-              <div className={cn('absolute top-3 right-3 z-10 flex items-center gap-2', streamLoading && 'hidden')}>
-                <Button variant="secondary" size="sm" onClick={() => setCinemaMode(!cinemaMode)} className="bg-background/80 backdrop-blur-sm hover:bg-background/90 gap-2 text-xs sm:text-sm">
-                  {cinemaMode ? <><Sun className="w-4 h-4" /><span className="hidden sm:inline">Exit Cinema</span></> : <><Moon className="w-4 h-4" /><span className="hidden sm:inline">Cinema Mode</span></>}
-                </Button>
-                {cinemaMode && (
-                  <Button variant="secondary" size="icon" onClick={() => setCinemaMode(false)} className="bg-background/80 backdrop-blur-sm h-8 w-8">
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
+        <Navbar />
+        <main className="min-h-screen pb-16" style={{ background: '#0f1117', paddingTop: 72 }}>
+          <div className="max-w-5xl mx-auto px-4">
+            <Link to={'/anime/' + animeId} className="inline-flex items-center gap-1.5 text-sm mb-4 transition-colors" style={{ color: 'rgba(255,255,255,0.45)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.45)')}
+            >
+              <ChevronLeft className="w-4 h-4" /> {anime?.title}
+            </Link>
+
+            <div className="mb-5">
               {streamLoading ? (
-                <div className="aspect-video bg-card rounded-xl flex flex-col items-center justify-center">
-                  <Loader2 className="w-12 h-12 text-accent animate-spin mb-3" />
-                  <p className="text-sm text-muted-foreground">Loading video...</p>
-                </div>
-              ) : streamError || !isValidStreamUrl ? (
-                <div className="aspect-video bg-card rounded-xl flex flex-col items-center justify-center p-6">
-                  <AlertCircle className="w-12 h-12 text-destructive mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Failed to load video</h3>
-                  <p className="text-sm text-muted-foreground text-center mb-4 max-w-md">{streamError || 'Invalid stream URL'}</p>
+                <StreamLoading />
+              ) : streamError || !isValid ? (
+                <div className="aspect-video flex flex-col items-center justify-center p-8 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16 }}>
+                  <AlertCircle className="w-12 h-12 mb-4" style={{ color: '#f87171' }} />
+                  <h3 className="text-base font-bold mb-2">Failed to load video</h3>
+                  <p className="text-sm mb-5 max-w-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>{streamError || 'Invalid stream URL'}</p>
                   <div className="flex flex-wrap gap-3 justify-center">
-                    <Button onClick={fetchStream} variant="outline">Try Again</Button>
-                    <Button onClick={() => setQuality(quality === 'HD' ? 'SD' : 'HD')} variant="outline">Try {quality === 'HD' ? 'SD' : 'HD'} Quality</Button>
+                    <Button onClick={fetchStream} style={{ background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.25)', color: '#a78bfa' }}>Try Again</Button>
+                    <Button onClick={() => setQuality(quality === 'HD' ? 'SD' : 'HD')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
+                      Try {quality === 'HD' ? 'SD' : 'HD'}
+                    </Button>
                     {streamUrl && (
-                      <Button asChild variant="outline" className="gap-2">
-                        <a href={streamUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" />Open in Tab</a>
-                      </Button>
+                      <a href={streamUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}
+                      >
+                        <ExternalLink className="w-4 h-4" /> Open in New Tab
+                      </a>
                     )}
                   </div>
                 </div>
-              ) : isEmbedUrl ? (
-                <div className="aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
-                  <iframe src={streamUrl} className="w-full h-full" allowFullScreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" title={anime?.title + ' Episode ' + episodeNumber} />
+              ) : isEmbed ? (
+                <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ aspectRatio: '16/9', background: '#000' }}>
+                  <iframe
+                    key={iframeSrc}
+                    src={iframeSrc}
+                    className="w-full h-full"
+                    allowFullScreen
+                    allow="autoplay; fullscreen; encrypted-media; picture-in-picture; accelerometer; gyroscope"
+                    title={(anime?.title || 'Anime') + ' Episode ' + episodeNumber}
+                    referrerPolicy="no-referrer"
+                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups"
+                  />
                 </div>
               ) : (
-                <div className="rounded-xl overflow-hidden shadow-2xl">
+                <div className="rounded-2xl overflow-hidden shadow-2xl">
                   <VideoPlayer src={streamUrl} poster={posterImage} title={'Episode ' + episodeNumber} onQualityChange={setQuality} qualities={['HD', 'SD']} currentQuality={quality} />
+                </div>
+              )}
+
+              {!streamLoading && !streamError && isValid && isEmbed && (
+                <div className="flex justify-end mt-2">
+                  <a href={streamUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.35)' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#a78bfa')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> Open in new tab if video doesn't load
+                  </a>
                 </div>
               )}
             </div>
 
-            {!streamLoading && !streamError && isEmbedUrl && isValidStreamUrl && (
-              <div className={cn('mb-4 flex justify-end', cinemaMode && 'hidden sm:flex')}>
-                <a href={streamUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-accent transition-colors">
-                  <ExternalLink className="w-4 h-4" /> Open in new tab
-                </a>
-              </div>
-            )}
-
-            <div className={cn('flex flex-col gap-4 p-4 sm:p-5 rounded-2xl border transition-all duration-300', cinemaMode ? 'bg-card/50 backdrop-blur-sm border-border/30' : 'bg-card border-border/50')}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg sm:text-xl font-bold truncate">{anime?.title}</h1>
-                  <p className="text-sm text-accent font-medium mt-0.5">
+                  <h1 className="text-lg font-bold truncate" style={{ color: '#e2e8f0' }}>{anime?.title}</h1>
+                  <p className="text-sm font-medium mt-0.5" style={{ color: '#a78bfa' }}>
                     Episode {episodeNumber}{currentEpisode?.title ? ' — ' + currentEpisode.title : ''}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Button variant="outline" size="sm" onClick={() => setShowEpisodes(!showEpisodes)} className="gap-2 text-xs">
+                  <button
+                    onClick={() => setShowEpisodes(!showEpisodes)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}
+                  >
                     <List className="w-4 h-4" /> Episodes
-                  </Button>
-                  <Button variant="outline" size="sm" disabled={!prevEpisode} onClick={() => prevEpisode && navigate('/watch/' + animeId + '/' + prevEpisode.id)} className="gap-1 text-xs">
+                  </button>
+                  <button
+                    disabled={!prevEpisode}
+                    onClick={() => prevEpisode && navigate('/watch/' + animeId + '/' + prevEpisode.id)}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition-all disabled:opacity-40"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}
+                  >
                     <ChevronLeft className="w-4 h-4" /> Prev
-                  </Button>
-                  <Button size="sm" disabled={!nextEpisode} onClick={() => nextEpisode && navigate('/watch/' + animeId + '/' + nextEpisode.id)} className="gap-1 text-xs bg-accent hover:bg-accent/90 text-accent-foreground shadow-glow">
+                  </button>
+                  <button
+                    disabled={!nextEpisode}
+                    onClick={() => nextEpisode && navigate('/watch/' + animeId + '/' + nextEpisode.id)}
+                    className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition-all disabled:opacity-40 shadow-glow-sm"
+                    style={{ background: 'rgba(167,139,250,0.85)', color: '#0f1117', border: '1px solid rgba(167,139,250,0.5)' }}
+                  >
                     Next <ChevronRight className="w-4 h-4" />
-                  </Button>
+                  </button>
                 </div>
               </div>
+
               {showEpisodes && episodes.length > 0 && (
-                <div className="border-t border-border/40 pt-4">
-                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">All Episodes</p>
-                  <div className="grid grid-cols-4 xs:grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2 max-h-52 overflow-y-auto scrollbar-hide">
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 16 }}>
+                  <p className="text-xs font-semibold mb-3 uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    All Episodes ({episodes.length})
+                  </p>
+                  <div className="grid grid-cols-5 xs:grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2 max-h-52 overflow-y-auto scrollbar-hide">
                     {episodes.map((ep: Episode) => (
-                      <button key={ep.id} onClick={() => navigate('/watch/' + animeId + '/' + ep.id)} className={cn('py-2 px-1 rounded-lg text-xs font-semibold transition-all duration-200 text-center', ep.id === episodeId ? 'bg-accent text-accent-foreground shadow-glow' : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground')}>
+                      <button
+                        key={ep.id}
+                        onClick={() => navigate('/watch/' + animeId + '/' + ep.id)}
+                        className={cn('py-2 px-1 rounded-xl text-xs font-bold text-center transition-all duration-200 font-mono-nums', ep.id === episodeId ? 'shadow-glow-sm' : '')}
+                        style={ep.id === episodeId
+                          ? { background: 'rgba(167,139,250,0.85)', color: '#0f1117', border: '1px solid rgba(167,139,250,0.5)' }
+                          : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.07)' }
+                        }
+                      >
                         {ep.number || '?'}
                       </button>
                     ))}
@@ -231,3 +279,4 @@ import { useEffect, useState, useCallback } from 'react';
       </>
     );
   }
+  
