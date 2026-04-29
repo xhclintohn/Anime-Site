@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
   import { Toaster as Sonner } from "@/components/ui/sonner";
   import { TooltipProvider } from "@/components/ui/tooltip";
   import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-  import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+  import { BrowserRouter, Routes, Route } from "react-router-dom";
   import { HelmetProvider } from "react-helmet-async";
   import { useEffect } from "react";
   import HomePage from "./pages/HomePage";
@@ -16,32 +16,34 @@ import { Toaster } from "@/components/ui/toaster";
 
   const queryClient = new QueryClient();
 
-  function ScrollAnimationObserver() {
-    const location = useLocation();
+  function ScrollFadeObserver() {
     useEffect(() => {
-      const setup = () => {
-        const elements = document.querySelectorAll('.scroll-fade');
-        if (!elements.length) return () => {};
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('in-view');
-                entry.target.classList.remove('out-view');
-              } else {
-                entry.target.classList.remove('in-view');
-                entry.target.classList.add('out-view');
-              }
-            });
-          },
-          { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
-        );
-        elements.forEach((el) => observer.observe(el));
-        return () => observer.disconnect();
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in-view');
+            }
+          });
+        },
+        { threshold: 0.06, rootMargin: '0px 0px -30px 0px' }
+      );
+
+      const observe = () => {
+        document.querySelectorAll('.scroll-fade:not(.in-view)').forEach((el) => io.observe(el));
       };
-      const id = setTimeout(setup, 80);
-      return () => clearTimeout(id);
-    }, [location.pathname]);
+
+      observe();
+
+      const mo = new MutationObserver(observe);
+      mo.observe(document.body, { childList: true, subtree: true });
+
+      return () => {
+        io.disconnect();
+        mo.disconnect();
+      };
+    }, []);
+
     return null;
   }
 
@@ -52,7 +54,7 @@ import { Toaster } from "@/components/ui/toaster";
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <ScrollAnimationObserver />
+            <ScrollFadeObserver />
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/search" element={<SearchPage />} />
