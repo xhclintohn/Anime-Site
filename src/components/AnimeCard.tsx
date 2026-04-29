@@ -18,87 +18,97 @@ import { Link } from 'react-router-dom';
     return (
       <Link
         to={'/anime/' + anime.id}
-        className="group relative block rounded-2xl overflow-hidden bg-card border border-border/30 anime-card-enter"
-        style={{
-          animationDelay: (index * 0.05) + 's',
-          animationFillMode: 'both',
-        }}
+        className="group relative flex flex-col rounded-2xl overflow-hidden card-hover anime-card-enter"
+        style={{ animationDelay: (index * 0.04) + 's', animationFillMode: 'both' }}
       >
-        <div className="relative aspect-[2/3] overflow-hidden bg-muted">
+        <div
+          className="relative overflow-hidden"
+          style={{ aspectRatio: '2/3', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px' }}
+        >
           {imageUrl ? (
             <img
               src={imageUrl}
               alt={anime.title}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
+              style={{ display: 'block' }}
               onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
+                const t = e.target as HTMLImageElement;
+                t.style.display = 'none';
               }}
             />
           ) : (
-            <div className="w-full h-full bg-muted animate-pulse" />
+            <div className="w-full h-full skeleton-wave" />
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/25 to-transparent" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(15,17,23,0.95) 0%, rgba(15,17,23,0.4) 40%, transparent 70%)' }} />
 
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-accent/90 flex items-center justify-center shadow-glow scale-90 group-hover:scale-100 transition-transform duration-300">
-              <Play className="w-6 h-6 text-accent-foreground fill-accent-foreground ml-0.5" />
+            <div
+              className="w-13 h-13 flex items-center justify-center shadow-glow"
+              style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(167,139,250,0.9)' }}
+            >
+              <Play className="w-6 h-6 fill-white text-white ml-0.5" />
             </div>
           </div>
 
-          <div className="absolute top-2 left-2 right-2 flex items-start justify-between">
+          <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-1">
             {anime.type && (
-              <span className="px-2 py-0.5 rounded-md bg-accent/90 text-accent-foreground text-[10px] font-black uppercase tracking-wider">
+              <span
+                className="px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider"
+                style={{ background: 'rgba(124,58,237,0.85)', color: '#e2e8f0', borderRadius: 6 }}
+              >
                 {anime.type}
               </span>
             )}
             {anime.rating && (
-              <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-sm text-[10px] font-bold ml-auto">
-                <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" />
+              <span
+                className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold font-mono-nums ml-auto"
+                style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', borderRadius: 6, color: '#fbbf24' }}
+              >
+                <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                 {Number(anime.rating).toFixed(1)}
               </span>
             )}
           </div>
 
           {showEpisode && currentEpisode && totalEpisodes && (
-            <div className="absolute bottom-11 left-2">
-              <span className="px-2 py-0.5 rounded-md bg-black/80 text-white text-[10px] font-semibold">
+            <div className="absolute bottom-14 left-2">
+              <span
+                className="px-2 py-0.5 text-[9px] font-bold font-mono-nums"
+                style={{ background: 'rgba(0,0,0,0.8)', color: '#e2e8f0', borderRadius: 5 }}
+              >
                 {currentEpisode}/{totalEpisodes} eps
               </span>
             </div>
           )}
-        </div>
 
-        <div className="p-3">
-          <h3 className={cn(
-            'text-xs sm:text-[13px] font-semibold line-clamp-2 leading-tight transition-colors duration-200',
-            'text-foreground/85 group-hover:text-accent'
-          )}>
-            {anime.title}
-          </h3>
-          <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-muted-foreground">
-            {year && <span>{year}</span>}
-            {year && (totalEpisodes || anime.status) && <span>&middot;</span>}
-            {totalEpisodes ? <span>{totalEpisodes} eps</span> : anime.status ? <span>{anime.status}</span> : null}
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 pb-2">
+            <h3
+              className="text-[12px] sm:text-[13px] font-bold leading-tight line-clamp-2 transition-colors duration-200"
+              style={{ color: '#e2e8f0', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}
+            >
+              {anime.title}
+            </h3>
+            {(year || anime.status) && (
+              <p className="text-[10px] mt-0.5 font-mono-nums" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                {year}{year && anime.status ? ' · ' : ''}{anime.status}
+              </p>
+            )}
           </div>
         </div>
-
-        <div className="absolute inset-0 rounded-2xl ring-1 ring-border/30 group-hover:ring-accent/40 transition-all duration-300 pointer-events-none" />
       </Link>
     );
   }
 
   export function AnimeCardSkeleton() {
     return (
-      <div className="relative rounded-2xl overflow-hidden bg-card border border-border/30">
-        <div className="aspect-[2/3] bg-muted/60 animate-pulse" />
-        <div className="p-3 space-y-2">
-          <div className="h-3.5 bg-muted/80 rounded-lg w-full animate-pulse" />
-          <div className="h-3 bg-muted/60 rounded-lg w-2/3 animate-pulse" />
-        </div>
+      <div className="relative flex flex-col rounded-2xl overflow-hidden" style={{ aspectRatio: '2/3' }}>
+        <div
+          className="w-full h-full skeleton-wave"
+          style={{ borderRadius: 16, border: '1px solid rgba(255,255,255,0.07)' }}
+        />
       </div>
     );
   }
