@@ -41,10 +41,18 @@ import { Toaster } from "@/components/ui/toaster";
   function ScrollFadeObserver() {
     useEffect(() => {
       const io = new IntersectionObserver(
-        (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); }),
-        { threshold: 0.06, rootMargin: '0px 0px -30px 0px' }
+        (entries) => entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in-view');
+            e.target.classList.add('aos-animate');
+          }
+        }),
+        { threshold: 0.06, rootMargin: '0px 0px -40px 0px' }
       );
-      const observe = () => document.querySelectorAll('.scroll-fade:not(.in-view)').forEach(el => io.observe(el));
+      const observe = () => {
+        document.querySelectorAll('.scroll-fade:not(.in-view)').forEach(el => io.observe(el));
+        document.querySelectorAll('[data-aos]:not(.aos-animate)').forEach(el => io.observe(el));
+      };
       observe();
       const mo = new MutationObserver(observe);
       mo.observe(document.body, { childList: true, subtree: true });

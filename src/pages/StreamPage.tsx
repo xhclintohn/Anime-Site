@@ -213,8 +213,7 @@ export default function StreamPage() {
                     allowFullScreen
                     allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                     title={(anime?.title || 'Anime') + ' Episode ' + episodeNumber}
-                    referrerPolicy="no-referrer"
-                    sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-presentation"
                   />
                 </div>
               )}

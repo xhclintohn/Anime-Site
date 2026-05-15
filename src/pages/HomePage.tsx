@@ -22,7 +22,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
     const rowRef = useRef<HTMLDivElement>(null);
     return (
       <section className="scroll-fade">
-        <div className="flex items-center justify-between mb-4 px-4 sm:px-0">
+        <div className="flex items-center justify-between mb-4 px-4 sm:px-0" data-aos="fade-right">
           <h2 className="flex items-center gap-2 text-base font-black" style={{ color: '#e2e8f0' }}>
             <Icon className="w-4 h-4" style={{ color: '#a78bfa' }} />
             {title}
@@ -41,7 +41,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
                 </div>
               ))
             : items.map((anime, i) => (
-                <div key={anime.id} style={{ width: cardWidth, minWidth: cardWidth }}>
+                <div key={anime.id} data-aos="zoom-in-up" data-aos-delay={String(Math.min(i * 50, 400))} style={{ width: cardWidth, minWidth: cardWidth }}>
                   <AnimeCard anime={anime} index={i} />
                 </div>
               ))

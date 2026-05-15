@@ -135,7 +135,7 @@ export default function AnimeDetailPage() {
       </Helmet>
       <Navbar />
       <main className="min-h-screen pb-20" style={{ background: '#0a0a12' }}>
-        <div className="relative h-60 sm:h-72 md:h-80 overflow-hidden">
+        <div className="relative h-60 sm:h-72 md:h-80 overflow-hidden" data-aos="fade-down">
           {imageUrl && (
             <img src={imageUrl} alt="" className="w-full h-full object-cover hero-scale" style={{ filter: 'blur(3px) brightness(0.28)' }} />
           )}
@@ -143,7 +143,7 @@ export default function AnimeDetailPage() {
         </div>
 
         <div className="max-w-5xl mx-auto px-4">
-          <div className="relative flex flex-col sm:flex-row gap-6 -mt-24 mb-8">
+          <div className="relative flex flex-col sm:flex-row gap-6 -mt-24 mb-8" data-aos="fade-up">
             <div className="shrink-0 self-start">
               <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ width: 140, aspectRatio: '2/3', border: '2px solid rgba(167,139,250,0.2)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
                 {imageUrl
@@ -225,7 +225,7 @@ export default function AnimeDetailPage() {
           </div>
 
           {description && (
-            <div className="p-5 rounded-2xl mb-5 scroll-fade" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="p-5 rounded-2xl mb-5 scroll-fade" data-aos="flip-up" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <h2 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Synopsis</h2>
               <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>{displayDesc}</p>
               {descShort && (
@@ -237,7 +237,7 @@ export default function AnimeDetailPage() {
           )}
 
           {episodes.length > 0 && (
-            <div className="p-5 rounded-2xl scroll-fade" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="p-5 rounded-2xl scroll-fade" data-aos="fade-up" data-aos-delay="100" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.3)' }}>
                   Episodes ({episodes.length})

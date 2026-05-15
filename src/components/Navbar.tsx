@@ -164,19 +164,25 @@ export function Navbar() {
             </div>
           </div>
 
-          {searchOpen && (
-            <form onSubmit={handleSearch} className="pb-3 md:hidden">
+        </div>
+      </nav>
+
+      {searchOpen && (
+        <div className="fixed left-0 right-0 z-40 md:hidden" style={{ top: 64 }}
+          onClick={() => setSearchOpen(false)}>
+          <div className="px-4 py-3 glass-nav" onClick={e => e.stopPropagation()}>
+            <form onSubmit={handleSearch}>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'rgba(255,255,255,0.35)' }} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: '#a78bfa' }} />
                 <input ref={mobileRef} autoFocus type="text" placeholder="Search anime..."
                   value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(167,139,250,0.35)', color: '#e2e8f0' }} />
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(167,139,250,0.4)', color: '#e2e8f0' }} />
               </div>
             </form>
-          )}
+          </div>
         </div>
-      </nav>
+      )}
 
       {drawerOpen && (
         <div
