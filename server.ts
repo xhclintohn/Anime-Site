@@ -8,10 +8,15 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const BASE = (process.env.BASE_PATH || '').replace(/\/$/, '');
 const ANILIST = 'https://graphql.anilist.co';
-const CONSUMET = (process.env.CONSUMET_API || 'https://consumet-api-topaz.vercel.app').replace(/\/$/, '');
 const JIKAN = 'https://api.jikan.moe/v4';
 const ROOT = process.cwd();
 const CLIENT_DIST = path.join(ROOT, 'dist', 'public');
+
+const CONSUMET_INSTANCES = [
+  (process.env.CONSUMET_API || 'https://consumet-api-topaz.vercel.app').replace(/\/$/, ''),
+  'https://consumet-api.vercel.app',
+  'https://api.consumet.org',
+].filter((v, i, a) => a.indexOf(v) === i);
 
 app.use(cors());
 app.use(express.json());
@@ -68,6 +73,40 @@ interface ConsumetStreamResponse {
   download?: string;
 }
 
+interface ConsumetInfoResponse {
+  episodes?: ConsumetEpisode[];
+  totalEpisodes?: number;
+  id?: string;
+  title?: string;
+}
+
+interface GogoanimeSearchResult {
+  id: string;
+  title: string;
+  url?: string;
+  image?: string;
+  releaseDate?: string;
+  subOrDub?: string;
+}
+
+interface GogoanimeSearchResponse {
+  results?: GogoanimeSearchResult[];
+  currentPage?: number;
+}
+
+interface GogoanimeEpisode {
+  id: string;
+  number: number;
+  url?: string;
+}
+
+interface GogoanimeInfoResponse {
+  id?: string;
+  title?: string;
+  episodes?: GogoanimeEpisode[];
+  totalEpisodes?: number;
+}
+
 async function anilistQuery<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
   const res = await fetch(ANILIST, {
     method: 'POST',
@@ -77,6 +116,100 @@ async function anilistQuery<T>(query: string, variables: Record<string, unknown>
   const json = await res.json() as { data?: T; errors?: Array<{ message: string }> };
   if (json.errors?.length) throw new Error(json.errors[0].message);
   return json.data as T;
+}
+
+async function consumetFetch<T>(path: string): Promise<T | null> {
+  for (const base of CONSUMET_INSTANCES) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 9000);
+      const r = await fetch(`${base}${path}`, { signal: controller.signal as AbortSignal | null });
+      clearTimeout(timer);
+      if (r.ok) {
+        const data = await r.json() as T;
+        return data;
+      }
+    } catch {
+    }
+  }
+  return null;
+}
+
+async function consumetStream(path: string): Promise<ConsumetStreamResponse | null> {
+  for (const base of CONSUMET_INSTANCES) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+      const r = await fetch(`${base}${path}`, { signal: controller.signal as AbortSignal | null });
+      clearTimeout(timer);
+      if (r.ok) {
+        const data = await r.json() as ConsumetStreamResponse;
+        if (data.sources && data.sources.length > 0) return data;
+      }
+    } catch {
+    }
+  }
+  return null;
+}
+
+function titleToSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+function titleSimilarity(a: string, b: string): number {
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const na = normalize(a);
+  const nb = normalize(b);
+  if (na === nb) return 1;
+  if (na.includes(nb) || nb.includes(na)) return 0.85;
+  let matches = 0;
+  const shorter = na.length < nb.length ? na : nb;
+  const longer = na.length < nb.length ? nb : na;
+  for (let i = 0; i < shorter.length; i++) {
+    if (longer.includes(shorter[i])) matches++;
+  }
+  return matches / longer.length;
+}
+
+async function findGogoanimeEpisodes(titles: string[], expectedEps?: number): Promise<ConsumetEpisode[]> {
+  for (const title of titles) {
+    if (!title) continue;
+    const slug = titleToSlug(title);
+    if (!slug) continue;
+    try {
+      const searchData = await consumetFetch<GogoanimeSearchResponse>(`/anime/gogoanime/${encodeURIComponent(slug)}`);
+      const results = searchData?.results || [];
+      if (!results.length) continue;
+
+      const ranked = results
+        .map(r => ({ ...r, score: titleSimilarity(r.title || '', title) }))
+        .sort((a, b) => b.score - a.score);
+
+      const best = ranked[0];
+      if (!best || best.score < 0.45) continue;
+
+      const infoData = await consumetFetch<GogoanimeInfoResponse>(`/anime/gogoanime/info/${encodeURIComponent(best.id)}`);
+      const rawEps = infoData?.episodes || [];
+      if (!rawEps.length) continue;
+
+      const episodes: ConsumetEpisode[] = rawEps.map(e => ({
+        id: e.id,
+        number: e.number,
+        title: undefined,
+        image: undefined,
+      }));
+
+      if (expectedEps && expectedEps > 100 && episodes.length < 20) continue;
+
+      return episodes;
+    } catch {
+    }
+  }
+  return [];
 }
 
 const Q_TRENDING = `query($p:Int,$n:Int){Page(page:$p,perPage:$n){media(type:ANIME,sort:TRENDING_DESC,status_in:[RELEASING,FINISHED]){id title{romaji english}coverImage{large extraLarge}bannerImage episodes status genres averageScore format season seasonYear description(asHtml:false)}}}`;
@@ -137,10 +270,27 @@ app.get(BASE + '/api/info/:id', async (req: Request, res: Response) => {
 
 app.get(BASE + '/api/episodes/:id', async (req: Request, res: Response) => {
   try {
-    const r = await fetch(`${CONSUMET}/meta/anilist/info/${req.params.id}`);
-    if (!r.ok) throw new Error('status ' + r.status);
-    const data = await r.json() as { episodes?: ConsumetEpisode[]; totalEpisodes?: number };
-    res.json({ episodes: data.episodes || [], totalEpisodes: data.totalEpisodes || 0 });
+    const animeId = req.params.id;
+    const infoData = await consumetFetch<ConsumetInfoResponse>(`/meta/anilist/info/${animeId}`);
+    if (infoData && infoData.episodes && infoData.episodes.length > 0) {
+      return res.json({ episodes: infoData.episodes, totalEpisodes: infoData.totalEpisodes || infoData.episodes.length });
+    }
+
+    const anilistData = await anilistQuery<{ Media: AniListMedia }>(Q_INFO, { id: parseInt(animeId) }).catch(() => null);
+    const englishTitle = anilistData?.Media?.title?.english || '';
+    const romajiTitle = anilistData?.Media?.title?.romaji || '';
+    const expectedEps = anilistData?.Media?.episodes;
+
+    const episodes = await findGogoanimeEpisodes(
+      [englishTitle, romajiTitle].filter(Boolean),
+      expectedEps
+    );
+
+    if (episodes.length > 0) {
+      return res.json({ episodes, totalEpisodes: episodes.length });
+    }
+
+    res.json({ episodes: [], totalEpisodes: 0 });
   } catch (e: unknown) {
     res.status(502).json({ error: 'Could not load episodes: ' + (e instanceof Error ? e.message : 'Unknown'), episodes: [] });
   }
@@ -153,21 +303,27 @@ app.get(BASE + '/api/detail', async (req: Request, res: Response) => {
     const numId = parseInt(String(id));
     if (isNaN(numId)) return res.status(400).json({ error: 'Invalid id' });
 
-    const [infoResult, epResult] = await Promise.allSettled([
-      anilistQuery<{ Media: AniListMedia }>(Q_INFO, { id: numId }),
-      fetch(`${CONSUMET}/meta/anilist/info/${numId}`).then(r => {
-        if (!r.ok) throw new Error('status ' + r.status);
-        return r.json() as Promise<{ episodes?: ConsumetEpisode[]; totalEpisodes?: number }>;
-      }),
-    ]);
+    const infoResult = await anilistQuery<{ Media: AniListMedia }>(Q_INFO, { id: numId });
+    const media = infoResult.Media;
 
-    if (infoResult.status === 'rejected') {
-      throw new Error(infoResult.reason?.message || 'Failed to load anime info');
+    const englishTitle = media.title?.english || '';
+    const romajiTitle = media.title?.romaji || '';
+    const expectedEps = media.episodes;
+
+    const consumetData = await consumetFetch<ConsumetInfoResponse>(`/meta/anilist/info/${numId}`);
+    let episodes: ConsumetEpisode[] = consumetData?.episodes || [];
+    let totalEpisodes = consumetData?.totalEpisodes || episodes.length;
+
+    if (!episodes.length) {
+      const fallbackEps = await findGogoanimeEpisodes(
+        [englishTitle, romajiTitle].filter(Boolean),
+        expectedEps
+      );
+      if (fallbackEps.length > 0) {
+        episodes = fallbackEps;
+        totalEpisodes = fallbackEps.length;
+      }
     }
-
-    const media = infoResult.value.Media;
-    const episodes = epResult.status === 'fulfilled' ? (epResult.value.episodes || []) : [];
-    const totalEpisodes = epResult.status === 'fulfilled' ? (epResult.value.totalEpisodes || 0) : 0;
 
     res.json({ ...media, episodes, totalEpisodes });
   } catch (e: unknown) {
@@ -201,15 +357,34 @@ app.get(BASE + '/api/stream', async (req: Request, res: Response) => {
   try {
     const ep = String(req.query.ep || req.query.episodeId || '');
     if (!ep) return res.status(400).json({ error: 'ep or episodeId param required' });
-    const r = await fetch(`${CONSUMET}/meta/anilist/watch/${encodeURIComponent(ep)}`);
-    if (!r.ok) throw new Error('status ' + r.status);
-    const data = await r.json() as ConsumetStreamResponse;
-    const sources: StreamSource[] = data.sources || [];
+
     const quality = String(req.query.quality || 'HD').toLowerCase();
+
+    let data: ConsumetStreamResponse | null = null;
+
+    data = await consumetStream(`/meta/anilist/watch/${encodeURIComponent(ep)}`);
+
+    if (!data || !data.sources?.length) {
+      data = await consumetStream(`/anime/gogoanime/watch/${encodeURIComponent(ep)}`);
+    }
+
+    if (!data || !data.sources?.length) {
+      const epDub = ep.replace(/-episode-/, '-dub-episode-');
+      if (epDub !== ep) {
+        data = await consumetStream(`/anime/gogoanime/watch/${encodeURIComponent(epDub)}`);
+      }
+    }
+
+    if (!data || !data.sources?.length) {
+      return res.status(502).json({ error: 'Stream unavailable for this episode. Try a different episode or quality.', sources: [] });
+    }
+
+    const sources: StreamSource[] = data.sources || [];
     const preferred =
       sources.find(s => s.quality.toLowerCase().includes(quality)) ||
       sources.find(s => s.isM3U8) ||
       sources[0];
+
     res.json({ ...data, url: preferred?.url || null });
   } catch (e: unknown) {
     res.status(502).json({ error: 'Could not load stream: ' + (e instanceof Error ? e.message : 'Unknown'), sources: [] });
