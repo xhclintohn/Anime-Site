@@ -133,13 +133,18 @@ async function gogoSearch(query: string): Promise<Array<{ slug: string; title: s
 async function gogoShowInfo(slug: string): Promise<{ alias: string; maxEp: number } | null> {
   const html = await gogoFetch(`${GOGO_BASE}/category/${slug}`);
   if (!html) return null;
-  const aliasM = html.match(/id="alias_anime"[^>]*value="([^"]+)"/);
-  const epEndM = html.match(/id="ep_end"[^>]*value="(\d+)"/);
+  const aliasM = html.match(/href="\/([a-z0-9][a-z0-9-]+)-episode-1"/);
   if (!aliasM) return null;
-  return {
-    alias: aliasM[1],
-    maxEp: epEndM ? parseInt(epEndM[1]) : 0,
-  };
+  const alias = aliasM[1];
+  let maxEp = 0;
+  const rangeRe = /data-value="\d+-(\d+)"/g;
+  let m;
+  while ((m = rangeRe.exec(html)) !== null) maxEp = Math.max(maxEp, parseInt(m[1]));
+  if (!maxEp) {
+    const numRe = /data-num="(\d+)"/g;
+    while ((m = numRe.exec(html)) !== null) maxEp = Math.max(maxEp, parseInt(m[1]));
+  }
+  return { alias, maxEp };
 }
 
 async function gogoEmbedUrl(episodeId: string): Promise<string | null> {
