@@ -154,7 +154,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
         const p = enterFs(c);
         if (p) {
           p.then(() => {
-            try { (screen.orientation as { lock(o:string): Promise<void> }).lock('landscape'); } catch {}
+            try { (screen.orientation as unknown as { lock(o:string): Promise<void> }).lock('landscape'); } catch {}
           }).catch(() => {
             // Container failed → iOS Safari: fall back to native video fullscreen
             const vi = v as HTMLVideoElement & { webkitEnterFullscreen?(): void };
