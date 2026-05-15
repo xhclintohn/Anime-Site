@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' — ToxicWatch' : 'ToxicWatch — Free Anime Streaming' %></title>
+<meta name="description" content="<%= typeof pageDesc !== 'undefined' ? pageDesc : 'Watch anime online for free in HD. Trending, popular, seasonal anime — all on ToxicWatch.' %>">
+<meta name="keywords" content="watch anime online free,anime streaming,toxicwatch,free anime,anime episodes,anime series,subbed anime,dubbed anime,anilist,gogoanime,anime hd,watch anime,best anime site,anime 2025,toxicapis">
+<meta name="author" content="xhclinton">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ToxicWatch">
+<meta property="og:title" content="<%= typeof pageTitle !== 'undefined' ? pageTitle + ' — ToxicWatch' : 'ToxicWatch' %>">
+<meta property="og:description" content="<%= typeof pageDesc !== 'undefined' ? pageDesc : 'Watch anime online for free in HD.' %>">
+<% if (typeof ogImage !== 'undefined' && ogImage) { %><meta property="og:image" content="<%= ogImage %>"><% } %>
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#7c3aed">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="<%= base %>/static/css/style.css">
+<script>window.__BASE__='<%= base %>';</script>

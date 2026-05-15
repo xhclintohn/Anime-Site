@@ -1,81 +1,91 @@
-# Shinime
+# ToxicWatch 🎌
 
-  A modern anime streaming web application built with React, Vite, and TypeScript.
+> Free anime streaming site powered by AniList & Consumet — built by [xhclinton](https://xhclinton.me)
 
-  ## Features
+**Live:** [toxiwatch.xhclinton.me](https://toxiwatch.xhclinton.me)
 
-  - Homepage with recommended, ongoing, and scheduled anime
-  - Anime search
-  - Browse by type: Series, Movies, OVA, Live Action
-  - Genre browsing and filtering
-  - Anime detail pages with synopsis, ratings, and episode lists
-  - Episode streaming with HD/SD quality selection
-  - Cinema mode and keyboard navigation
-  - Responsive design for mobile and desktop
+---
 
-  ## Tech Stack
+## Features
 
-  - React 18
-  - Vite + TypeScript
-  - React Router v6
-  - TanStack Query
-  - Tailwind CSS + shadcn/ui
-  - hls.js (HLS video streaming)
-  - Supabase (Edge Functions as API proxy)
-  - Express (production static file server)
+- Trending, popular & seasonal anime
+- Full anime details — synopsis, genres, characters, score
+- Episode list & streaming via Consumet
+- HLS video player with server switching
+- Lightning-fast search with AniList
+- Mobile-first responsive design
+- Purple-dark aesthetic with particle animations
 
-  ## Architecture
+---
 
-  The frontend communicates with a Supabase Edge Function (`mobinime-proxy`) which proxies requests to the anime data API. This keeps API credentials server-side and handles CORS.
+## Stack
 
-  ## Deployment
+- **Backend:** Node.js + Express 4
+- **Templates:** EJS
+- **Anime Data:** AniList GraphQL API (free, no auth)
+- **Episodes & Streaming:** Consumet API
+- **Video Player:** HLS.js
+- **No database required**
 
-  ### Prerequisites
+---
 
-  - [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
-  - [Supabase CLI](https://supabase.com/docs/guides/cli)
-  - A Supabase project
+## Getting Started
 
-  ### 1. Deploy the Supabase Edge Function
+```bash
+git clone https://github.com/xhclintohn/Anime-Site
+cd Anime-Site
+npm install
+npm start
+```
 
-  ```bash
-  supabase login
-  supabase link --project-ref YOUR_PROJECT_REF
-  supabase functions deploy mobinime-proxy --no-verify-jwt
-  ```
+Open `http://localhost:4000`
 
-  ### 2. Deploy to Heroku
+---
 
-  Create a new Heroku app and connect it to this GitHub repository.
+## Environment Variables
 
-  Set the following Config Vars in your Heroku app dashboard under **Settings → Config Vars**:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `4000` | Server port |
+| `BASE_PATH` | `` | URL prefix (e.g. `/toxicwatch` for reverse proxy) |
+| `CONSUMET_API` | `https://consumet-api-topaz.vercel.app` | Consumet API instance URL |
 
-  | Config Var | Value |
-  |---|---|
-  | `VITE_SUPABASE_URL` | `https://your-project-ref.supabase.co` |
-  | `VITE_SUPABASE_PUBLISHABLE_KEY` | Your Supabase **anon/public** key |
-  | `NPM_CONFIG_PRODUCTION` | `false` |
+---
 
-  > **Important:** `NPM_CONFIG_PRODUCTION=false` is required so Heroku installs dev dependencies needed to build the frontend.
+## Deploy on Heroku
 
-  Then deploy via the Heroku dashboard or:
+```bash
+heroku create your-app-name
+git push heroku main
+```
 
-  ```bash
-  heroku login
-  heroku git:remote -a your-heroku-app-name
-  git push heroku main
-  ```
+Heroku auto-detects Node.js and runs `npm start` via the Procfile.
 
-  ## Local Development
+---
 
-  ```bash
-  cp .env.example .env
-  # Fill in your Supabase credentials in .env
-  npm install
-  npm run dev
-  ```
+## APIs Used
 
-  ## License
+- **[AniList GraphQL](https://anilist.gitbook.io/anilist-apiv2-docs/)** — Free, no key needed. Provides all anime metadata.
+- **[Consumet API](https://github.com/consumet/consumet.ts)** — Open-source, self-hostable. Episodes and streaming sources.
 
-  For educational and personal use only.
-  
+---
+
+## Connect
+
+| Platform | Link |
+|----------|------|
+| GitHub | [@xhclintohn](https://github.com/xhclintohn) |
+| Telegram | [@xhclintonxd](https://t.me/xhclintonxd) |
+| WhatsApp | [+254114885159](https://wa.me/254114885159) |
+| Channel | [Join WhatsApp Channel](https://whatsapp.com/channel/0029Vb7dL1LHltY3pgCvwR3B) |
+| Website | [xhclinton.me](https://xhclinton.me) |
+
+---
+
+## Disclaimer
+
+ToxicWatch is for educational purposes only. All anime content is sourced from third-party streaming providers. We do not host any video files.
+
+---
+
+**Made with ❤️ by [xhclinton](https://xhclinton.me)**

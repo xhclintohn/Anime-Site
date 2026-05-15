@@ -1,0 +1,45 @@
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <button class="mob-btn" id="mobBtn"><i class="fas fa-bars"></i></button>
+    <a href="<%= base %>/" class="nav-logo">
+      <div class="nav-logo-icon"><i class="fas fa-play"></i></div>
+      <span class="toxic">Toxic</span><span class="watch">Watch</span>
+    </a>
+    <div class="nav-links">
+      <a href="<%= base %>/" class="<%= currentPath === '/' || currentPath === '' ? 'active' : '' %>"><i class="fas fa-home"></i>Home</a>
+      <a href="<%= base %>/search" class="<%= currentPath === '/search' ? 'active' : '' %>"><i class="fas fa-search"></i>Browse</a>
+      <a href="https://github.com/xhclintohn/Anime-Site" target="_blank" rel="noopener"><i class="fab fa-github"></i>Source Code</a>
+      <a href="https://wa.me/254114885159" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>Contact Dev</a>
+      <a href="https://whatsapp.com/channel/0029Vb7dL1LHltY3pgCvwR3B" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>Join Channel</a>
+    </div>
+    <div class="nav-search">
+      <i class="fas fa-search si"></i>
+      <input id="navSearchInp" type="text" placeholder="Search anime…" autocomplete="off">
+    </div>
+    <div class="nav-social">
+      <a href="https://github.com/xhclintohn" target="_blank" rel="noopener" class="gh" title="Follow on GitHub"><i class="fab fa-github"></i></a>
+      <a href="https://t.me/xhclintonxd" target="_blank" rel="noopener" class="tg" title="Telegram"><i class="fab fa-telegram-plane"></i></a>
+      <a href="https://wa.me/254114885159" target="_blank" rel="noopener" class="wa" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <a href="<%= base %>/search" class="nav-cta"><i class="fas fa-play"></i>Watch Now</a>
+  </div>
+</nav>
+
+<div id="drawerOverlay"></div>
+<div id="sideDrawer">
+  <div class="sd-head">
+    <a href="<%= base %>/" class="sd-logo"><span>Toxic</span><span class="watch">Watch</span></a>
+    <button class="sd-close" id="drawerClose"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="sd-nav">
+    <a href="<%= base %>/"><i class="fas fa-home"></i>Home</a>
+    <a href="<%= base %>/search"><i class="fas fa-search"></i>Browse Anime</a>
+    <div class="sd-divider"></div>
+    <a href="https://github.com/xhclintohn/Anime-Site" target="_blank" rel="noopener"><i class="fab fa-github"></i>Source Code</a>
+    <a href="https://github.com/xhclintohn" target="_blank" rel="noopener"><i class="fab fa-github"></i>Follow on GitHub</a>
+    <a href="https://t.me/xhclintonxd" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i>Telegram</a>
+    <a href="https://wa.me/254114885159" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>Contact Developer</a>
+    <a href="https://whatsapp.com/channel/0029Vb7dL1LHltY3pgCvwR3B" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>Join WhatsApp Channel</a>
+  </nav>
+  <div class="sd-footer">ToxicWatch &middot; Free Anime Streaming</div>
+</div>

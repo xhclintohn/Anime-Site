@@ -1,0 +1,54 @@
+<%- include('partials/head', {base, pageTitle: 'Watch Anime', pageDesc: 'Stream anime free in HD on ToxicWatch.'}) %>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head>
+<body>
+<canvas id="techCanvas"></canvas>
+<%- include('partials/preloader') %>
+<%- include('partials/nav') %>
+
+<div class="watch-layout">
+  <div>
+    <div class="breadcrumb anim-el" id="watchBread">
+      <a href="<%= base %>/">Home</a><i class="fas fa-chevron-right"></i>
+      <a href="<%= base %>/anime/<%= animeId %>" id="watchAnimeLink">Anime</a>
+      <i class="fas fa-chevron-right"></i><span id="watchEpLabel">Episode <%-  ep %></span>
+    </div>
+    <div class="player-wrap anim-el">
+      <div class="player-loading" id="playerLoading">
+        <div class="player-spinner"></div>
+        <div style="font-size:.82rem;color:var(--text3)">Loading stream…</div>
+      </div>
+      <video id="videoPlayer" controls playsinline></video>
+    </div>
+    <div class="player-controls">
+      <div class="player-title" id="playerTitle">Loading…</div>
+      <div class="player-sub" id="playerSub"></div>
+    </div>
+    <div style="padding:14px 0 8px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:.78rem;color:var(--text3);font-weight:600">Servers:</span>
+      <div id="serverTabs" class="server-tabs" style="padding:0"></div>
+    </div>
+    <div style="padding:14px 0;display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn-secondary" id="prevEpBtn" style="font-size:.82rem;padding:9px 18px"><i class="fas fa-step-backward"></i> Prev</button>
+      <button class="btn-primary" id="nextEpBtn" style="font-size:.82rem;padding:9px 18px">Next <i class="fas fa-step-forward"></i></button>
+      <a href="<%= base %>/anime/<%= animeId %>" class="btn-secondary" style="font-size:.82rem;padding:9px 18px"><i class="fas fa-info-circle"></i> Anime Info</a>
+    </div>
+  </div>
+
+  <div class="watch-sidebar">
+    <div class="watch-ep-list">
+      <div class="watch-ep-head"><i class="fas fa-list" style="color:var(--purple);margin-right:8px"></i>Episodes</div>
+      <div id="watchEpList">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script src="<%= base %>/static/js/app.js"></script>
+<script>var __ANIME_ID__='<%= animeId %>';var __EP_NUM__=<%= parseInt(ep) || 1 %>;</script>
+<script src="<%= base %>/static/js/watch.js"></script>
+</body>
+</html>

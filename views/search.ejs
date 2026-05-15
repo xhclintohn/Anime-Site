@@ -1,0 +1,30 @@
+<%- include('partials/head', {base, pageTitle: query ? 'Search: ' + query : 'Browse Anime', pageDesc: 'Search and browse thousands of anime titles on ToxicWatch.'}) %>
+</head>
+<body>
+<canvas id="techCanvas"></canvas>
+<%- include('partials/preloader') %>
+<%- include('partials/nav') %>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="<%= base %>/">Home</a><i class="fas fa-chevron-right"></i>Browse</div>
+  <h1><em>Browse</em> Anime</h1>
+  <p>Discover thousands of anime titles — search, filter, explore</p>
+</div>
+
+<div style="position:relative;z-index:2;max-width:1300px;margin:0 auto;padding:0 24px 80px">
+  <div class="search-bar anim-el">
+    <i class="fas fa-search si"></i>
+    <input id="searchInp" type="text" placeholder="Search anime title…" value="<%= query %>" autocomplete="off">
+    <button class="sb-btn" id="searchBtn"><i class="fas fa-search"></i> Search</button>
+  </div>
+  <div id="searchStatus" style="font-size:.82rem;color:var(--text3);margin-bottom:20px"></div>
+  <div class="anime-grid" id="resultsGrid"></div>
+  <div style="text-align:center;padding:40px 0 0" id="paginationWrap"></div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script src="<%= base %>/static/js/app.js"></script>
+<script src="<%= base %>/static/js/search.js"></script>
+</body>
+</html>

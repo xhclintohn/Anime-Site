@@ -1,0 +1,60 @@
+<%- include('partials/head', {base, pageTitle: 'ToxicWatch — Free Anime Streaming', pageDesc: 'Watch trending, popular and seasonal anime online for free in HD. ToxicWatch — your free anime streaming destination.'}) %>
+</head>
+<body>
+<canvas id="techCanvas"></canvas>
+<%- include('partials/preloader') %>
+<%- include('partials/nav') %>
+
+<div class="hero" id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><i class="fas fa-fire"></i>Trending Now</div>
+    <h1 class="hero-title" id="heroTitle">Loading...</h1>
+    <div class="hero-meta" id="heroMeta"></div>
+    <p class="hero-desc" id="heroDesc"></p>
+    <div class="hero-btns">
+      <a href="#" class="btn-primary" id="heroWatch"><i class="fas fa-play"></i>Watch Now</a>
+      <a href="#" class="btn-secondary" id="heroInfo"><i class="fas fa-info-circle"></i>More Info</a>
+    </div>
+  </div>
+  <div class="hero-dots" id="heroDots"></div>
+</div>
+
+<div style="position:relative;z-index:2">
+  <div class="section">
+    <div class="section-inner">
+      <div class="section-head anim-el">
+        <div class="section-title"><i class="fas fa-fire"></i>Trending Now</div>
+        <a href="<%= base %>/search" class="section-see-all">See all <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="scroll-row" id="trendingRow"></div>
+    </div>
+  </div>
+
+  <div class="section" style="background:rgba(13,16,23,.6)">
+    <div class="section-inner">
+      <div class="section-head anim-el">
+        <div class="section-title"><i class="fas fa-crown"></i>All Time Popular</div>
+        <a href="<%= base %>/search" class="section-see-all">See all <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="scroll-row" id="popularRow"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-inner">
+      <div class="section-head anim-el">
+        <div class="section-title"><i class="fas fa-calendar-alt"></i>This Season &mdash; <em id="seasonLabel" style="color:var(--purple);font-style:normal"></em></div>
+        <a href="<%= base %>/search" class="section-see-all">See all <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="scroll-row" id="seasonalRow"></div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script src="<%= base %>/static/js/app.js"></script>
+<script src="<%= base %>/static/js/home.js"></script>
+</body>
+</html>
