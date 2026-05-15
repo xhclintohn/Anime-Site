@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import fetch from 'node-fetch';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -9,12 +10,18 @@ const BASE = (process.env.BASE_PATH || '').replace(/\/$/, '');
 const ANILIST = 'https://graphql.anilist.co';
 const CONSUMET = (process.env.CONSUMET_API || 'https://consumet-api-topaz.vercel.app').replace(/\/$/, '');
 const JIKAN = 'https://api.jikan.moe/v4';
+const ROOT = process.cwd();
+const CLIENT_DIST = path.join(ROOT, 'dist', 'public');
 
 app.use(cors());
 app.use(express.json());
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(BASE + '/static', express.static(path.join(__dirname, 'public')));
+app.set('views', path.join(ROOT, 'views'));
+app.use(BASE + '/static', express.static(path.join(ROOT, 'public')));
+
+if (fs.existsSync(CLIENT_DIST)) {
+  app.use(express.static(CLIENT_DIST));
+}
 
 interface AniListTitle { romaji?: string; english?: string; native?: string; }
 interface AniListCoverImage { large?: string; extraLarge?: string; }
@@ -90,22 +97,6 @@ function getSeason(): string {
 function ctx(req: Request, extra: Record<string, unknown> = {}): Record<string, unknown> {
   return { base: BASE, currentPath: req.path, ...extra };
 }
-
-app.get([BASE + '/', BASE], (req: Request, res: Response) => {
-  res.render('index', ctx(req));
-});
-
-app.get(BASE + '/search', (req: Request, res: Response) => {
-  res.render('search', ctx(req, { query: req.query.q || '' }));
-});
-
-app.get(BASE + '/anime/:id', (req: Request, res: Response) => {
-  res.render('anime', ctx(req, { animeId: req.params.id }));
-});
-
-app.get(BASE + '/watch/:id/:ep', (req: Request, res: Response) => {
-  res.render('watch', ctx(req, { animeId: req.params.id, ep: req.params.ep }));
-});
 
 app.get(BASE + '/api/home', async (_req: Request, res: Response) => {
   try {
@@ -239,8 +230,22 @@ app.get(BASE + '/api/jikan/*', async (req: Request, res: Response) => {
   }
 });
 
-app.use((req: Request, res: Response) => {
-  res.status(404).render('404', ctx(req));
+app.get([BASE + '/', BASE + '/search', BASE + '/anime/*', BASE + '/watch/*', BASE], (req: Request, res: Response) => {
+  const spaIndex = path.join(CLIENT_DIST, 'index.html');
+  if (fs.existsSync(spaIndex)) {
+    res.sendFile(spaIndex);
+  } else {
+    res.render('index', ctx(req));
+  }
+});
+
+app.use((_req: Request, res: Response) => {
+  const spaIndex = path.join(CLIENT_DIST, 'index.html');
+  if (fs.existsSync(spaIndex)) {
+    res.sendFile(spaIndex);
+  } else {
+    res.status(404).render('404', ctx(_req));
+  }
 });
 
 app.listen(PORT, () => {

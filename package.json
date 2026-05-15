@@ -9,9 +9,10 @@
     "build:server": "tsc --project tsconfig.server.json",
     "build:client": "vite build",
     "build": "npm run build:server && npm run build:client",
+    "heroku-postbuild": "npm run build",
     "typecheck": "tsc --noEmit --project tsconfig.app.json && tsc --noEmit --project tsconfig.server.json"
   },
-  "engines": { "node": ">=18.0.0" },
+  "engines": { "node": "24.x" },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",

@@ -13,6 +13,10 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    outDir: 'dist/public',
+    emptyOutDir: true,
+  },
   plugins: [react()],
   resolve: {
     alias: {
