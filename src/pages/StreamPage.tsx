@@ -134,9 +134,9 @@ export default function StreamPage() {
       </Helmet>
       <Navbar />
 
-      <main className="min-h-screen pb-16" style={{ background: '#0a0a12', paddingTop: 64 }}>
-        <div className="max-w-[1400px] mx-auto px-3 sm:px-4 pt-3">
-          <div className="flex items-center gap-2 mb-3 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+      <main className="min-h-screen pb-16" style={{ background: '#0a0a12', paddingTop: 72 }}>
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-4 pt-2">
+          <div className="flex items-center gap-1.5 mb-3 text-xs font-semibold py-2 px-3 rounded-xl" style={{ color: 'rgba(255,255,255,0.38)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', maxWidth: 'max-content' }}>
             <Link to="/" className="hover:text-white transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             {anime && <Link to={'/anime/' + animeId} className="hover:text-white transition-colors truncate max-w-[200px]">{anime.title}</Link>}
@@ -213,7 +213,7 @@ export default function StreamPage() {
                     allowFullScreen
                     allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                     title={(anime?.title || 'Anime') + ' Episode ' + episodeNumber}
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock allow-presentation"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-presentation"
                   />
                 </div>
               )}

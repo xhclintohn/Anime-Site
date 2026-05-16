@@ -154,7 +154,7 @@ async function gogoEmbedUrl(episodeId: string): Promise<string | null> {
   return m ? m[1] : null;
 }
 
-async function findEpisodesGogo(titles: string[], expectedEps?: number): Promise<ConsumetEpisode[]> {
+async function findEpisodesGogo(titles: string[], expectedEps?: number): Promise<{ sub: ConsumetEpisode[]; dub: ConsumetEpisode[] }> {
   for (const title of titles) {
     if (!title) continue;
     try {
@@ -168,21 +168,31 @@ async function findEpisodesGogo(titles: string[], expectedEps?: number): Promise
       const best = ranked[0];
       if (!best || best.score < 0.4) continue;
 
-      const info = await gogoShowInfo(best.slug);
-      if (!info || info.maxEp === 0) continue;
+      const [subInfo, dubInfo] = await Promise.all([
+        gogoShowInfo(best.slug),
+        gogoShowInfo(best.slug + '-dub').catch(() => null),
+      ]);
 
-      if (expectedEps && expectedEps > 50 && info.maxEp < 5) continue;
+      if (!subInfo || subInfo.maxEp === 0) continue;
+      if (expectedEps && expectedEps > 50 && subInfo.maxEp < 5) continue;
 
-      const episodes: ConsumetEpisode[] = Array.from({ length: info.maxEp }, (_, i) => ({
-        id: `${info.alias}-episode-${i + 1}`,
+      const sub: ConsumetEpisode[] = Array.from({ length: subInfo.maxEp }, (_, i) => ({
+        id: `${subInfo.alias}-episode-${i + 1}`,
         number: i + 1,
       }));
 
-      return episodes;
+      const dub: ConsumetEpisode[] = dubInfo && dubInfo.maxEp > 0
+        ? Array.from({ length: dubInfo.maxEp }, (_, i) => ({
+            id: `${dubInfo.alias}-episode-${i + 1}`,
+            number: i + 1,
+          }))
+        : [];
+
+      return { sub, dub };
     } catch {
     }
   }
-  return [];
+  return { sub: [], dub: [] };
 }
 
 const Q_TRENDING = `query($p:Int,$n:Int){Page(page:$p,perPage:$n){media(type:ANIME,sort:TRENDING_DESC,status_in:[RELEASING,FINISHED]){id title{romaji english}coverImage{large extraLarge}bannerImage episodes status genres averageScore format season seasonYear description(asHtml:false)}}}`;
@@ -249,13 +259,13 @@ app.get(BASE + '/api/episodes/:id', async (req: Request, res: Response) => {
     const romajiTitle = anilistData?.Media?.title?.romaji || '';
     const expectedEps = anilistData?.Media?.episodes;
 
-    const episodes = await findEpisodesGogo(
+    const { sub, dub } = await findEpisodesGogo(
       [englishTitle, romajiTitle].filter(Boolean),
       expectedEps
     );
 
-    if (episodes.length > 0) {
-      return res.json({ episodes, totalEpisodes: episodes.length });
+    if (sub.length > 0) {
+      return res.json({ episodes: sub, dubEpisodes: dub.length > 0 ? dub : undefined, totalEpisodes: sub.length });
     }
 
     res.json({ episodes: [], totalEpisodes: expectedEps || 0 });
@@ -278,12 +288,17 @@ app.get(BASE + '/api/detail', async (req: Request, res: Response) => {
     const romajiTitle = media.title?.romaji || '';
     const expectedEps = media.episodes;
 
-    const episodes = await findEpisodesGogo(
+    const { sub, dub } = await findEpisodesGogo(
       [englishTitle, romajiTitle].filter(Boolean),
       expectedEps
     );
 
-    res.json({ ...media, episodes, totalEpisodes: episodes.length || expectedEps || 0 });
+    res.json({
+      ...media,
+      episodes: sub,
+      dubEpisodes: dub.length > 0 ? dub : undefined,
+      totalEpisodes: sub.length || expectedEps || 0,
+    });
   } catch (e: unknown) {
     res.status(500).json({ error: e instanceof Error ? e.message : 'Unknown error' });
   }

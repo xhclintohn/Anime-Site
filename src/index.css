@@ -153,6 +153,18 @@
   .h-scroll-row::-webkit-scrollbar { display:none; }
   .h-scroll-row > * { scroll-snap-align:start; flex-shrink:0; }
 
+  @keyframes waveBar {
+    0%, 100% { transform: scaleY(0.28); opacity: 0.28; }
+    50%       { transform: scaleY(1.0);  opacity: 1.0;  }
+  }
+  .glass-nav {
+    background: rgba(9,9,18,0.96);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.32);
+  }
+
   /* ── AOS keyframes ──────────────────────────────────────────────────────────── */
   @keyframes aosSlideUp {
     from { opacity:0; transform:translateY(65px); }

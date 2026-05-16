@@ -19,6 +19,7 @@ export interface AnimeItem {
   englishSynopsis?: string;
   malId?: number;
   episodes?: Episode[];
+  dubEpisodes?: Episode[];
   totalEpisode?: number;
   totalEpisodes?: number;
   episode?: number;
@@ -55,6 +56,7 @@ interface AniListMedia {
   coverImage?: AniListCoverImage;
   bannerImage?: string;
   episodes?: number | RawEpisode[];
+  dubEpisodes?: Array<{ id: string; number: number }>;
   totalEpisodes?: number;
   status?: string;
   genres?: string[];
@@ -114,6 +116,9 @@ function anilistToAnime(m: AniListMedia): AnimeItem {
     genres: m.genres,
     totalEpisodes,
     episodes,
+    dubEpisodes: Array.isArray(m.dubEpisodes) && m.dubEpisodes.length > 0
+      ? m.dubEpisodes.map(e => ({ id: String(e.id), number: e.number }))
+      : undefined,
     displayDescription: m.description ? stripHtml(m.description) : undefined,
     source: 'primary',
   };
