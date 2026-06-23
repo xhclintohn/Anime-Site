@@ -1,6 +1,6 @@
-# ToxiNime 🎌
+# ToxiNime 🎌.  (Still Under Development!)
 
-> Free anime streaming — no sign-up, no ads, just anime.
+> Free anime streaming — no sign-up, no ads, just pure anime.
 
 **Live:** [toxiwatch.xhclinton.me](https://toxiwatch.xhclinton.me)
 **Source:** [github.com/xhclintohn/Anime-Site](https://github.com/xhclintohn/Anime-Site)
